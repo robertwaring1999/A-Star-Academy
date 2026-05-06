@@ -1,0 +1,2416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Star Academy</title>
+<meta name="description" content="A magical learning game for little ones!">
+<meta name="theme-color" content="#9333ea">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="A Star Academy">
+<link rel="apple-touch-icon" id="appleTouchIcon">
+<link rel="manifest" id="manifestLink">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink:#ff85c2; --purple:#c084fc; --lavender:#e9d5ff;
+    --gold:#fbbf24; --mint:#86efac; --bg:#fdf4ff; --dark:#4a1d96;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Nunito',sans-serif;font-weight:800;background:var(--bg);min-height:100vh;overflow-x:hidden;
+    background-image:radial-gradient(circle at 10% 20%,#fce7f3 0%,transparent 40%),
+    radial-gradient(circle at 90% 80%,#ede9fe 0%,transparent 40%);}
+
+  .stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden;}
+  .star{position:absolute;animation:floatStar linear infinite;opacity:0.4;}
+  @keyframes floatStar{0%{transform:translateY(100vh) rotate(0deg);opacity:0;}10%{opacity:0.4;}90%{opacity:0.4;}100%{transform:translateY(-10vh) rotate(360deg);opacity:0;}}
+
+  .header{text-align:center;padding:10px 16px 4px;position:relative;z-index:10;}
+  .header h1{font-family:'Fredoka One',cursive;font-size:clamp(1.5rem,5vw,2.4rem);
+    background:linear-gradient(135deg,#db2777,#9333ea,#db2777);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    filter:drop-shadow(2px 2px 4px rgba(147,51,234,0.3));margin-bottom:0;}
+  .header-nav{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;flex-wrap:wrap;}
+  .speak-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 22px;
+    border-radius:999px;border:none;background:linear-gradient(135deg,#db2777,#9333ea);
+    color:white;font-family:'Fredoka One',cursive;font-size:1.05rem;cursor:pointer;
+    box-shadow:0 5px 0 #7e22ce;transition:all 0.15s;letter-spacing:0.3px;}
+  .speak-btn:hover{transform:translateY(-2px);box-shadow:0 7px 0 #7e22ce;}
+  .speak-btn:active{transform:translateY(1px);box-shadow:0 2px 0 #7e22ce;}
+  .icon-btn{width:42px;height:42px;border-radius:14px;border:2px solid #e9d5ff;
+    background:white;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;
+    justify-content:center;box-shadow:0 3px 0 #e9d5ff;transition:all 0.15s;flex-shrink:0;}
+  .icon-btn:hover{transform:translateY(-2px);box-shadow:0 5px 0 #e9d5ff;border-color:#c084fc;}
+  .icon-btn:active{transform:translateY(0);box-shadow:0 1px 0 #e9d5ff;}
+  #companion{font-size:1.8rem;line-height:1;transition:all 0.4s;display:inline-flex;
+    align-items:center;justify-content:center;width:42px;height:42px;
+    background:white;border-radius:14px;border:2px solid #e9d5ff;box-shadow:0 3px 0 #e9d5ff;}
+
+  /* ── PALACE COLLAPSIBLE ── */
+  .palace-section{padding:4px 12px 2px;position:relative;z-index:10;}
+  .palace-toggle{display:flex;align-items:center;justify-content:center;gap:6px;
+    background:white;border-radius:999px;padding:6px 14px;cursor:pointer;
+    box-shadow:0 2px 10px rgba(147,51,234,0.12);font-family:'Fredoka One',cursive;
+    font-size:0.85rem;color:#7e22ce;user-select:none;margin:0 auto;max-width:360px;}
+  .palace-toggle-arrow{font-size:0.65rem;color:#c084fc;transition:transform 0.3s;}
+  .palace-toggle-arrow.closed{transform:rotate(180deg);}
+  .palace-content{max-height:320px;overflow:hidden;transition:max-height 0.4s cubic-bezier(0.4,0,0.2,1),opacity 0.3s;opacity:1;text-align:center;}
+  .palace-content.collapsed{max-height:0;opacity:0;}
+  #palaceSVG{width:clamp(160px,48vw,230px);height:auto;display:block;margin:4px auto 2px;
+    filter:drop-shadow(0 4px 10px rgba(147,51,234,0.2));}
+  .palace-piece{transition:opacity 0.7s ease,transform 0.7s cubic-bezier(.34,1.56,.64,1);}
+  .palace-piece.hidden{opacity:0;transform:translateY(14px) scale(0.88);}
+  #celebPalaceWrap{margin:6px auto 2px;}
+  #celebPalaceWrap svg{width:clamp(130px,40vw,190px);height:auto;}
+  .palace-progress{display:flex;justify-content:center;gap:4px;margin-top:4px;flex-wrap:wrap;}
+  .progress-gem{width:12px;height:12px;border-radius:50%;background:#e9d5ff;border:2px solid #c084fc;transition:all 0.4s;}
+  .progress-gem.filled{background:linear-gradient(135deg,var(--gold),#f59e0b);border-color:var(--gold);
+    box-shadow:0 0 6px rgba(251,191,36,0.6);animation:gemPop 0.4s ease;}
+  .unicorn-inner{padding:4px 0 6px;text-align:center;}
+  .unicorn-label{font-family:'Fredoka One',cursive;font-size:0.8rem;color:#7e22ce;margin-bottom:3px;}
+  .unicorn-bar{min-height:36px;background:white;border-radius:12px;padding:4px 10px;
+    display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;justify-content:center;
+    box-shadow:0 2px 10px rgba(147,51,234,0.1);max-width:95vw;}
+  .unicorn-slot{font-size:1.4rem;transition:all 0.3s;}
+  .unicorn-slot.earned{animation:slotPop 0.5s ease;}
+
+  /* ── EMOJI CATEGORY TABS ── */
+  .tabs{display:flex;gap:6px;justify-content:center;margin-bottom:10px;flex-wrap:wrap;padding:0 4px;}
+  .tab{width:52px;height:52px;border-radius:16px;border:2px solid #e9d5ff;
+    font-size:1.5rem;cursor:pointer;background:white;color:#7e22ce;position:relative;
+    box-shadow:0 3px 0 #e9d5ff;transition:all 0.18s;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:1px;padding:0;}
+  .tab .tab-cat-label{font-family:'Fredoka One',cursive;font-size:0.48rem;color:#7e22ce;
+    line-height:1;text-align:center;letter-spacing:-0.2px;}
+  .tab.active{background:linear-gradient(135deg,#db2777,#9333ea);border-color:transparent;
+    box-shadow:0 4px 0 #7e22ce;transform:translateY(-3px);}
+  .tab.active .tab-cat-label{color:white;}
+  .tab:active{transform:translateY(0);box-shadow:0 1px 0 #e9d5ff;}
+
+  .princess-section{text-align:center;padding:4px 14px 2px;position:relative;z-index:10;display:none;}
+  .princess-label{font-family:'Fredoka One',cursive;font-size:0.88rem;color:#db2777;margin-bottom:3px;}
+  .princess-bar{min-height:40px;background:linear-gradient(135deg,#fdf2f8,#faf5ff);border-radius:14px;
+    padding:5px 12px;display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px;justify-content:center;
+    box-shadow:0 2px 12px rgba(219,39,119,0.12);max-width:95vw;border:2px solid #fbcfe8;}
+  .princess-token{font-size:1.9rem;animation:princessArrive 0.8s ease;}
+  @keyframes princessArrive{0%{transform:scale(0) rotate(-30deg) translateY(20px);opacity:0}
+    70%{transform:scale(1.2) rotate(5deg) translateY(-5px);opacity:1}
+    100%{transform:scale(1) rotate(0) translateY(0);opacity:1}}
+
+  .game-container{max-width:560px;margin:4px auto;padding:0 12px 80px;position:relative;z-index:10;}
+  @keyframes gemPop{0%{transform:scale(0)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
+  @keyframes slotPop{0%{transform:scale(0) rotate(-20deg)}60%{transform:scale(1.3) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+
+  .bonus-banner{background:linear-gradient(135deg,#fef3c7,#fde68a);border:3px solid #fbbf24;
+    border-radius:14px;padding:7px 12px;font-family:'Fredoka One',cursive;font-size:0.95rem;
+    color:#92400e;text-align:center;margin-bottom:8px;display:none;
+    animation:bonusPulse 1s ease-in-out infinite;}
+  .bonus-banner.show{display:block;}
+  @keyframes bonusPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
+
+  .question-card{background:white;border-radius:22px;padding:18px 16px;
+    box-shadow:0 8px 28px rgba(147,51,234,0.13),0 0 0 3px #f3e8ff;
+    margin-bottom:10px;text-align:center;animation:cardIn 0.4s ease;transition:box-shadow 0.3s;}
+  @keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+  .question-picture{font-size:clamp(4rem,16vw,7rem);display:block;margin:0 auto 8px;line-height:1;
+    animation:picBounce 2.2s ease-in-out infinite;cursor:pointer;
+    filter:drop-shadow(0 4px 8px rgba(0,0,0,0.08));}
+  @keyframes picBounce{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-10px) scale(1.05)}}
+
+  .question-text{font-family:'Fredoka One',cursive;font-size:clamp(1.15rem,3.5vw,1.55rem);
+    color:var(--dark);margin-bottom:4px;line-height:1.3;}
+  .question-hint{font-size:0.85rem;color:#a855f7;font-weight:900;margin-bottom:12px;}
+
+  .options-grid{display:grid;gap:9px;grid-template-columns:1fr 1fr;}
+  .option-btn{padding:14px 8px;border-radius:16px;border:3px solid #e9d5ff;background:#fdf4ff;
+    font-family:'Fredoka One',cursive;font-size:clamp(1rem,3vw,1.4rem);color:var(--dark);
+    cursor:pointer;transition:all 0.15s;box-shadow:0 5px 0 #e9d5ff;
+    display:flex;flex-direction:column;align-items:center;gap:3px;min-height:64px;justify-content:center;}
+  .option-btn .opt-pic{font-size:1.7rem;line-height:1;}
+  .option-btn:hover{transform:translateY(-3px);box-shadow:0 8px 0 #e9d5ff;border-color:#c084fc;}
+  .option-btn:active{transform:translateY(0);box-shadow:0 2px 0 #e9d5ff;}
+  .option-btn.correct{background:linear-gradient(135deg,#86efac,#4ade80);border-color:#22c55e;
+    box-shadow:0 5px 0 #16a34a;color:#14532d;animation:correctPop 0.5s ease;}
+  @keyframes correctPop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+  .option-btn.wrong{background:linear-gradient(135deg,#fca5a5,#f87171);border-color:#ef4444;
+    box-shadow:0 5px 0 #dc2626;color:#7f1d1d;animation:shake 0.4s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  .option-btn:disabled{cursor:default;}
+
+  .feedback{text-align:center;font-family:'Fredoka One',cursive;font-size:1.25rem;
+    padding:9px;border-radius:14px;margin:7px 0;opacity:0;transition:all 0.3s;min-height:44px;}
+  .feedback.show{opacity:1;}
+  .feedback.correct-msg{color:#15803d;background:#dcfce7;}
+  .feedback.wrong-msg{color:#b91c1c;background:#fee2e2;}
+
+  .next-btn{display:block;width:100%;padding:13px;border-radius:999px;border:none;
+    background:linear-gradient(135deg,#db2777,#9333ea);color:white;font-family:'Fredoka One',cursive;
+    font-size:1.15rem;cursor:pointer;box-shadow:0 6px 0 #7e22ce;transition:all 0.15s;
+    margin-top:8px;opacity:0;pointer-events:none;}
+  .next-btn.show{opacity:1;pointer-events:all;}
+  .next-btn:hover{transform:translateY(-3px);box-shadow:0 9px 0 #7e22ce;}
+  .next-btn:active{transform:translateY(0);box-shadow:0 3px 0 #7e22ce;}
+
+  .score-bar{display:flex;justify-content:space-between;align-items:center;background:white;
+    border-radius:999px;padding:6px 14px;margin-bottom:10px;
+    box-shadow:0 2px 10px rgba(147,51,234,0.12);}
+  .score-item{display:flex;align-items:center;gap:4px;font-family:'Fredoka One',cursive;color:#7e22ce;font-size:0.85rem;font-weight:900;}
+  .score-val{background:linear-gradient(135deg,var(--gold),#f59e0b);-webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;background-clip:text;font-size:0.95rem;}
+
+  /* Per-answer burst */
+  .answer-burst{position:fixed;inset:0;pointer-events:none;z-index:90;
+    display:flex;align-items:center;justify-content:center;opacity:0;}
+  .answer-burst.show{opacity:1;}
+  .burst-emoji{font-size:7rem;animation:burstPop 0.75s ease forwards;}
+  @keyframes burstPop{0%{transform:scale(0) rotate(-20deg);opacity:1}
+    50%{transform:scale(1.5) rotate(10deg);opacity:1}
+    100%{transform:scale(0.5) rotate(0deg);opacity:0}}
+
+  /* Celebration */
+  .celebration{position:fixed;inset:0;background:rgba(250,232,255,0.97);z-index:100;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.5s;}
+  .celebration.show{opacity:1;pointer-events:all;}
+  .celeb-emoji-wrap{font-size:5.5rem;animation:celebSpin 1s ease-in-out infinite;}
+  @keyframes celebSpin{0%{transform:rotate(-12deg) scale(1)}50%{transform:rotate(12deg) scale(1.1)}100%{transform:rotate(-12deg) scale(1)}}
+  .celebration h2{font-family:'Fredoka One',cursive;font-size:clamp(1.7rem,5vw,2.7rem);
+    background:linear-gradient(135deg,#db2777,#9333ea);-webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;background-clip:text;margin:10px 0;}
+  .celebration p{color:#7e22ce;font-size:1rem;font-weight:700;margin-bottom:16px;max-width:320px;}
+  .celeb-continue{padding:12px 34px;border-radius:999px;border:none;
+    background:linear-gradient(135deg,#db2777,#9333ea);color:white;
+    font-family:'Fredoka One',cursive;font-size:1.15rem;cursor:pointer;
+    box-shadow:0 6px 0 #7e22ce;transition:all 0.15s;}
+  .celeb-continue:hover{transform:translateY(-3px);box-shadow:0 9px 0 #7e22ce;}
+
+  .confetti-piece{position:fixed;pointer-events:none;z-index:200;
+    animation:confettiFall linear forwards;border-radius:2px;}
+  @keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}
+    100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+  .big-letter{font-family:'Fredoka One',cursive;font-size:clamp(3.5rem,13vw,6rem);
+    background:linear-gradient(135deg,#db2777,#9333ea);-webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;background-clip:text;
+    filter:drop-shadow(2px 4px 6px rgba(147,51,234,0.3));display:block;text-align:center;}
+
+  /* ── FINISH SESSION BUTTON ── */
+  .finish-btn{display:block;width:100%;padding:10px;border-radius:999px;border:none;
+    background:linear-gradient(135deg,#f59e0b,#db2777);color:white;font-family:'Fredoka One',cursive;
+    font-size:1rem;cursor:pointer;box-shadow:0 5px 0 #92400e;transition:all 0.15s;margin-top:6px;}
+  .finish-btn:hover{transform:translateY(-2px);box-shadow:0 7px 0 #92400e;}
+
+  /* ── SESSION SUMMARY ── */
+  .session-summary{position:fixed;inset:0;background:rgba(250,232,255,0.97);z-index:110;
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+    text-align:center;padding:24px 20px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity 0.5s;}
+  .session-summary.show{opacity:1;pointer-events:all;}
+  .summary-title{font-family:'Fredoka One',cursive;font-size:clamp(1.8rem,5vw,2.6rem);
+    background:linear-gradient(135deg,#db2777,#9333ea);-webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;background-clip:text;margin:10px 0 4px;}
+  .summary-emoji{font-size:4.5rem;animation:celebSpin 1.2s ease-in-out infinite;display:block;}
+  .summary-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:360px;margin:14px 0;}
+  .stat-card{background:white;border-radius:18px;padding:14px 10px;
+    box-shadow:0 4px 16px rgba(147,51,234,0.13);border:2px solid #f3e8ff;}
+  .stat-card .stat-icon{font-size:1.8rem;display:block;margin-bottom:4px;}
+  .stat-card .stat-num{font-family:'Fredoka One',cursive;font-size:1.6rem;
+    background:linear-gradient(135deg,var(--gold),#f59e0b);-webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;background-clip:text;}
+  .stat-card .stat-lbl{font-size:0.78rem;color:#7e22ce;font-weight:900;}
+  .cat-breakdown{width:100%;max-width:360px;background:white;border-radius:18px;padding:14px;
+    box-shadow:0 4px 16px rgba(147,51,234,0.13);border:2px solid #f3e8ff;margin-bottom:14px;}
+  .cat-breakdown h3{font-family:'Fredoka One',cursive;color:#7e22ce;font-size:1rem;margin-bottom:10px;}
+  .cat-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+  .cat-row-label{font-size:0.8rem;font-weight:900;color:#4a1d96;width:70px;text-align:left;flex-shrink:0;}
+  .cat-bar-wrap{flex:1;background:#f3e8ff;border-radius:999px;height:14px;overflow:hidden;}
+  .cat-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#db2777,#9333ea);
+    transition:width 0.8s cubic-bezier(.34,1.56,.64,1);}
+  .cat-pct{font-family:'Fredoka One',cursive;font-size:0.75rem;color:#7e22ce;width:32px;text-align:right;flex-shrink:0;}
+  .summary-btns{display:flex;gap:10px;width:100%;max-width:360px;flex-wrap:wrap;justify-content:center;}
+  .sum-btn{flex:1;min-width:130px;padding:12px 16px;border-radius:999px;border:none;cursor:pointer;
+    font-family:'Fredoka One',cursive;font-size:1rem;transition:all 0.15s;}
+  .sum-btn.primary{background:linear-gradient(135deg,#db2777,#9333ea);color:white;box-shadow:0 5px 0 #7e22ce;}
+  .sum-btn.primary:hover{transform:translateY(-2px);box-shadow:0 7px 0 #7e22ce;}
+  .sum-btn.secondary{background:white;color:#7e22ce;border:2px solid #c084fc;box-shadow:0 3px 0 #c084fc;}
+  .sum-btn.secondary:hover{transform:translateY(-2px);box-shadow:0 5px 0 #c084fc;}
+
+  /* ── DASHBOARD ── */
+  .dashboard{position:fixed;inset:0;background:var(--bg);z-index:110;
+    display:flex;flex-direction:column;align-items:center;overflow-y:auto;
+    opacity:0;pointer-events:none;transition:opacity 0.4s;
+    background-image:radial-gradient(circle at 10% 20%,#fce7f3 0%,transparent 40%),
+    radial-gradient(circle at 90% 80%,#ede9fe 0%,transparent 40%);}
+  .dashboard.show{opacity:1;pointer-events:all;}
+  .dash-header{width:100%;max-width:500px;padding:20px 16px 0;text-align:center;}
+  .dash-title{font-family:'Fredoka One',cursive;font-size:clamp(1.5rem,4vw,2.2rem);
+    background:linear-gradient(135deg,#db2777,#9333ea);-webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;background-clip:text;}
+  .dash-body{width:100%;max-width:500px;padding:12px 16px 80px;}
+  .dash-section{background:white;border-radius:20px;padding:16px;margin-bottom:12px;
+    box-shadow:0 4px 18px rgba(147,51,234,0.1);border:2px solid #f3e8ff;}
+  .dash-section h3{font-family:'Fredoka One',cursive;color:#7e22ce;font-size:1.05rem;margin-bottom:12px;}
+
+  /* Streak display */
+  .streak-display{display:flex;align-items:center;justify-content:center;gap:16px;}
+  .streak-big{font-family:'Fredoka One',cursive;font-size:3.5rem;
+    background:linear-gradient(135deg,#f59e0b,#db2777);-webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;background-clip:text;}
+  .streak-sub{color:#7e22ce;font-weight:700;font-size:0.85rem;}
+  .streak-days{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:8px;}
+  .day-dot{width:32px;height:32px;border-radius:50%;background:#f3e8ff;border:2px solid #c084fc;
+    display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;color:#c084fc;}
+  .day-dot.done{background:linear-gradient(135deg,#f59e0b,#fb923c);border-color:#f59e0b;color:white;
+    box-shadow:0 2px 8px rgba(245,158,11,0.4);}
+  .day-dot.today{border-color:#db2777;color:#db2777;}
+  .day-dot.today.done{border-color:#f59e0b;}
+
+  /* Stars chart */
+  .stars-chart{display:flex;align-items:flex-end;gap:5px;height:80px;justify-content:center;padding:0 4px;}
+  .chart-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;}
+  .chart-bar{width:100%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#c084fc,#9333ea);
+    transition:height 0.7s cubic-bezier(.34,1.56,.64,1);min-height:4px;}
+  .chart-label{font-size:0.6rem;color:#7e22ce;font-weight:700;}
+  .chart-val{font-family:'Fredoka One',cursive;font-size:0.65rem;color:#9333ea;}
+
+  /* Reward chart */
+  .reward-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+  .reward-star{font-size:1.6rem;filter:grayscale(1);opacity:0.3;transition:all 0.4s;}
+  .reward-star.lit{filter:none;opacity:1;animation:gemPop 0.5s ease;}
+  .reward-total{font-family:'Fredoka One',cursive;font-size:0.9rem;color:#7e22ce;text-align:center;margin-top:8px;}
+
+  /* Close dashboard btn */
+  .dash-close{position:sticky;bottom:16px;display:block;margin:0 auto;
+    padding:12px 36px;border-radius:999px;border:none;
+    background:linear-gradient(135deg,#db2777,#9333ea);color:white;font-family:'Fredoka One',cursive;
+    font-size:1.1rem;cursor:pointer;box-shadow:0 6px 0 #7e22ce;transition:all 0.15s;}
+  .dash-close:hover{transform:translateY(-2px);box-shadow:0 8px 0 #7e22ce;}
+
+  /* ── SUBJECT BADGES on tabs ── */
+  .tab{position:relative;}
+  .tab-badge{position:absolute;top:-7px;right:-5px;font-size:0.7rem;line-height:1;
+    background:linear-gradient(135deg,#fbbf24,#f59e0b);border-radius:999px;
+    padding:2px 5px;color:#7c2d12;font-weight:900;border:2px solid white;
+    box-shadow:0 1px 4px rgba(0,0,0,0.2);pointer-events:none;z-index:5;}
+  .tab-badge.silver{background:linear-gradient(135deg,#e2e8f0,#94a3b8);color:#1e293b;}
+  .tab-badge.gold{background:linear-gradient(135deg,#fde68a,#f59e0b);color:#7c2d12;}
+  .tab-badge.platinum{background:linear-gradient(135deg,#c084fc,#9333ea);color:white;}
+
+  /* ── MINI STORY PANEL ── */
+  .story-panel{background:linear-gradient(135deg,#fdf2f8,#f0f9ff);border:3px solid #c084fc;
+    border-radius:18px;padding:12px 14px;margin-bottom:10px;text-align:center;
+    animation:cardIn 0.5s ease;display:none;}
+  .story-panel.show{display:block;}
+  .story-text{font-family:'Fredoka One',cursive;font-size:clamp(0.92rem,2.8vw,1.1rem);
+    color:#4a1d96;line-height:1.55;margin-bottom:8px;}
+  .story-pic{font-size:2.6rem;display:block;margin-bottom:6px;
+    animation:picBounce 2s ease-in-out infinite;}
+  .story-speak-btn{padding:5px 14px;border-radius:999px;border:none;
+    background:linear-gradient(135deg,#c084fc,#9333ea);color:white;
+    font-family:'Fredoka One',cursive;font-size:0.82rem;cursor:pointer;
+    box-shadow:0 3px 0 #7e22ce;}
+
+  /* ── THEME PICKER ── */
+  .theme-picker{position:fixed;inset:0;background:rgba(250,232,255,0.97);z-index:120;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 0.4s;}
+  .theme-picker.show{opacity:1;pointer-events:all;}
+  .theme-picker h2{font-family:'Fredoka One',cursive;font-size:clamp(1.4rem,5vw,2rem);
+    background:linear-gradient(135deg,#db2777,#9333ea);-webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
+  .theme-picker p{color:#7e22ce;font-weight:700;font-size:0.88rem;margin-bottom:18px;}
+  .theme-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:360px;}
+  .theme-card{background:white;border-radius:18px;padding:16px 10px;cursor:pointer;
+    border:3px solid #e9d5ff;transition:all 0.2s;box-shadow:0 4px 12px rgba(147,51,234,0.1);}
+  .theme-card:hover{transform:translateY(-4px);border-color:#c084fc;box-shadow:0 8px 20px rgba(147,51,234,0.2);}
+  .theme-card.selected{border-color:#9333ea;background:linear-gradient(135deg,#fdf4ff,#fdf2f8);
+    box-shadow:0 0 0 3px rgba(147,51,234,0.3);}
+  .theme-card .theme-emoji{font-size:2.6rem;display:block;margin-bottom:6px;}
+  .theme-card .theme-name{font-family:'Fredoka One',cursive;font-size:0.95rem;color:#4a1d96;}
+  .theme-card .theme-desc{font-size:0.7rem;color:#7e22ce;font-weight:700;margin-top:3px;}
+
+  /* ── LEARNING PASSPORT ── */
+  .passport{position:fixed;inset:0;background:var(--bg);z-index:115;
+    display:flex;flex-direction:column;align-items:center;overflow-y:auto;
+    opacity:0;pointer-events:none;transition:opacity 0.4s;
+    background-image:radial-gradient(circle at 20% 20%,#fce7f3 0%,transparent 35%),
+    radial-gradient(circle at 80% 80%,#ede9fe 0%,transparent 35%);}
+  .passport.show{opacity:1;pointer-events:all;}
+  .passport-inner{width:100%;max-width:480px;padding:20px 16px 100px;}
+  .passport-title{font-family:'Fredoka One',cursive;font-size:clamp(1.5rem,5vw,2.1rem);
+    background:linear-gradient(135deg,#db2777,#9333ea);-webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:4px;}
+  .passport-sub{text-align:center;color:#7e22ce;font-weight:700;font-size:0.82rem;margin-bottom:16px;}
+  .passport-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+  .passport-stamp{background:white;border-radius:18px;padding:14px 8px;text-align:center;
+    border:3px solid #e9d5ff;box-shadow:0 3px 12px rgba(147,51,234,0.08);position:relative;transition:all 0.3s;}
+  .passport-stamp.unlocked{border-color:#c084fc;background:linear-gradient(135deg,#fdf4ff,#fdf2f8);}
+  .passport-stamp.complete{border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#dcfce7);}
+  .stamp-icon{font-size:2rem;display:block;margin-bottom:5px;filter:grayscale(1);opacity:0.3;transition:all 0.4s;}
+  .passport-stamp.unlocked .stamp-icon,.passport-stamp.complete .stamp-icon{filter:none;opacity:1;}
+  .stamp-name{font-family:'Fredoka One',cursive;font-size:0.85rem;color:#4a1d96;margin-bottom:3px;}
+  .stamp-progress{font-size:0.68rem;color:#7e22ce;font-weight:700;}
+  .stamp-bar-wrap{background:#f3e8ff;border-radius:999px;height:7px;margin-top:5px;overflow:hidden;}
+  .stamp-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#db2777,#9333ea);
+    transition:width 1s cubic-bezier(.34,1.56,.64,1);}
+  .stamp-seal{position:absolute;top:-9px;right:-7px;font-size:1.3rem;animation:gemPop 0.4s ease;display:none;}
+  .passport-stamp.complete .stamp-seal{display:block;}
+  .passport-close{display:block;margin:0 auto;padding:12px 36px;border-radius:999px;border:none;
+    background:linear-gradient(135deg,#db2777,#9333ea);color:white;font-family:'Fredoka One',cursive;
+    font-size:1.1rem;cursor:pointer;box-shadow:0 6px 0 #7e22ce;transition:all 0.15s;
+    position:sticky;bottom:16px;margin-top:16px;}
+  .passport-close:hover{transform:translateY(-2px);box-shadow:0 8px 0 #7e22ce;}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="header">
+  <h1>🦄 A Star Academy 👑</h1>
+  <div class="header-nav">
+    <button class="speak-btn" onclick="unlockAudio();speakCurrentQuestion();" id="speakBtn">🔊 Read to me!</button>
+    <div id="companion" title="Your unicorn friend!">🦄</div>
+    <button class="icon-btn" onclick="openDashboard()" title="My Progress">📊</button>
+    <button class="icon-btn" onclick="openPassport()" title="Passport">🗺️</button>
+  </div>
+</div>
+
+<div class="palace-section" id="palaceSection">
+  <!-- Compact toggle bar always visible -->
+  <div class="palace-toggle" onclick="togglePalace()" id="palaceToggleBar">
+    <span id="palaceLabel">✨ Your Disney Palace ✨</span>
+    <span id="palaceToggleGems"></span>
+    <span class="palace-toggle-arrow closed" id="palaceArrow">▲</span>
+    <button onclick="event.stopPropagation();openThemePicker()" style="font-size:0.65rem;padding:2px 8px;border-radius:999px;border:none;background:rgba(147,51,234,0.15);color:#7e22ce;font-family:'Fredoka One',cursive;cursor:pointer;margin-left:4px;">🎨</button>
+  </div>
+  <!-- Expandable palace content -->
+  <div id="palaceContent" class="palace-content collapsed">
+    <div class="palace-display">
+      <svg id="palaceSVG" viewBox="0 0 260 180" xmlns="http://www.w3.org/2000/svg" aria-label="Disney Palace being built">
+        <rect x="0" y="155" width="260" height="25" fill="#86efac" rx="4"/>
+        <ellipse cx="30" cy="155" rx="18" ry="6" fill="#4ade80"/>
+        <ellipse cx="130" cy="155" rx="22" ry="7" fill="#4ade80"/>
+        <ellipse cx="225" cy="155" rx="18" ry="6" fill="#4ade80"/>
+        <g id="p-garden" class="palace-piece hidden">
+          <circle cx="20" cy="150" r="5" fill="#fb7185"/><circle cx="32" cy="147" r="4" fill="#f9a8d4"/>
+          <circle cx="44" cy="151" r="5" fill="#fb7185"/><circle cx="56" cy="148" r="4" fill="#fbbf24"/>
+          <circle cx="200" cy="150" r="5" fill="#c084fc"/><circle cx="212" cy="147" r="4" fill="#fb7185"/>
+          <circle cx="224" cy="151" r="5" fill="#f9a8d4"/><circle cx="236" cy="148" r="4" fill="#fbbf24"/>
+          <rect x="19" y="150" width="2" height="8" fill="#4ade80"/><rect x="31" y="147" width="2" height="10" fill="#4ade80"/>
+          <rect x="43" y="151" width="2" height="7" fill="#4ade80"/><rect x="55" y="148" width="2" height="9" fill="#4ade80"/>
+          <rect x="199" y="150" width="2" height="8" fill="#4ade80"/><rect x="211" y="147" width="2" height="10" fill="#4ade80"/>
+          <rect x="223" y="151" width="2" height="7" fill="#4ade80"/><rect x="235" y="148" width="2" height="9" fill="#4ade80"/>
+        </g>
+        <g id="p-wall" class="palace-piece hidden">
+          <rect x="60" y="110" width="140" height="45" fill="#e9d5ff" rx="3"/>
+          <rect x="60" y="110" width="140" height="6" fill="#c084fc" rx="3"/>
+          <line x1="60" y1="125" x2="200" y2="125" stroke="#c084fc" stroke-width="1.5" opacity="0.5"/>
+          <line x1="60" y1="140" x2="200" y2="140" stroke="#c084fc" stroke-width="1.5" opacity="0.5"/>
+          <line x1="95" y1="110" x2="95" y2="155" stroke="#c084fc" stroke-width="1" opacity="0.4"/>
+          <line x1="130" y1="110" x2="130" y2="155" stroke="#c084fc" stroke-width="1" opacity="0.4"/>
+          <line x1="165" y1="110" x2="165" y2="155" stroke="#c084fc" stroke-width="1" opacity="0.4"/>
+        </g>
+        <g id="p-towers" class="palace-piece hidden">
+          <rect x="44" y="90" width="30" height="65" fill="#ddd6fe" rx="3"/>
+          <rect x="186" y="90" width="30" height="65" fill="#ddd6fe" rx="3"/>
+          <rect x="44" y="83" width="8" height="10" fill="#c084fc" rx="2"/><rect x="55" y="83" width="8" height="10" fill="#c084fc" rx="2"/><rect x="66" y="83" width="8" height="10" fill="#c084fc" rx="2"/>
+          <rect x="186" y="83" width="8" height="10" fill="#c084fc" rx="2"/><rect x="197" y="83" width="8" height="10" fill="#c084fc" rx="2"/><rect x="208" y="83" width="8" height="10" fill="#c084fc" rx="2"/>
+        </g>
+        <g id="p-keep" class="palace-piece hidden">
+          <rect x="88" y="72" width="84" height="83" fill="#ede9fe" rx="3"/>
+          <rect x="88" y="72" width="84" height="7" fill="#a855f7" rx="3"/>
+          <rect x="88" y="64" width="10" height="11" fill="#a855f7" rx="2"/><rect x="101" y="64" width="10" height="11" fill="#a855f7" rx="2"/>
+          <rect x="114" y="64" width="10" height="11" fill="#a855f7" rx="2"/><rect x="127" y="64" width="10" height="11" fill="#a855f7" rx="2"/>
+          <rect x="140" y="64" width="10" height="11" fill="#a855f7" rx="2"/><rect x="153" y="64" width="10" height="11" fill="#a855f7" rx="2"/>
+          <rect x="162" y="64" width="10" height="11" fill="#a855f7" rx="2"/>
+        </g>
+        <g id="p-door" class="palace-piece hidden">
+          <rect x="112" y="120" width="36" height="35" fill="#7e22ce" rx="2"/>
+          <ellipse cx="130" cy="120" rx="18" ry="14" fill="#7e22ce"/>
+          <rect x="116" y="122" width="28" height="30" fill="#6d28d9" rx="2"/>
+          <ellipse cx="130" cy="122" rx="14" ry="10" fill="#6d28d9"/>
+          <circle cx="139" cy="137" r="2.5" fill="#fbbf24"/>
+        </g>
+        <g id="p-windows" class="palace-piece hidden">
+          <rect x="51" y="100" width="16" height="20" fill="#bae6fd" rx="3"/><ellipse cx="59" cy="100" rx="8" ry="5" fill="#bae6fd"/>
+          <rect x="193" y="100" width="16" height="20" fill="#bae6fd" rx="3"/><ellipse cx="201" cy="100" rx="8" ry="5" fill="#bae6fd"/>
+          <rect x="95" y="85" width="14" height="18" fill="#bae6fd" rx="3"/><ellipse cx="102" cy="85" rx="7" ry="4.5" fill="#bae6fd"/>
+          <rect x="143" y="85" width="14" height="18" fill="#bae6fd" rx="3"/><ellipse cx="150" cy="85" rx="7" ry="4.5" fill="#bae6fd"/>
+          <line x1="57" y1="102" x2="57" y2="116" stroke="white" stroke-width="1.5" opacity="0.6"/>
+          <line x1="100" y1="87" x2="100" y2="100" stroke="white" stroke-width="1.5" opacity="0.6"/>
+          <line x1="148" y1="87" x2="148" y2="100" stroke="white" stroke-width="1.5" opacity="0.6"/>
+          <line x1="199" y1="102" x2="199" y2="116" stroke="white" stroke-width="1.5" opacity="0.6"/>
+        </g>
+        <g id="p-spire" class="palace-piece hidden">
+          <rect x="118" y="30" width="24" height="42" fill="#c084fc" rx="2"/>
+          <polygon points="130,4 118,32 142,32" fill="#db2777"/>
+          <polygon points="130,4 142,10 130,16" fill="#fbbf24"/>
+        </g>
+        <g id="p-magic" class="palace-piece hidden">
+          <text x="24" y="88" font-size="14">✨</text><text x="220" y="78" font-size="12">✨</text>
+          <text x="118" y="20" font-size="13">⭐</text><text x="72" y="70" font-size="11">💫</text>
+          <text x="175" y="68" font-size="11">💫</text><text x="96" y="55" font-size="10">✨</text>
+          <text x="152" y="52" font-size="10">✨</text>
+        </g>
+        <g id="p-crown" class="palace-piece hidden">
+          <polygon points="122,8 126,2 130,6 134,2 138,8 140,14 120,14" fill="#fbbf24"/>
+          <circle cx="126" cy="4" r="2" fill="#fb7185"/><circle cx="130" cy="6" r="2" fill="#a855f7"/><circle cx="134" cy="4" r="2" fill="#fb7185"/>
+        </g>
+        <g id="p-fireworks" class="palace-piece hidden">
+          <text x="8" y="50" font-size="18">🎆</text><text x="222" y="55" font-size="18">🎆</text>
+          <text x="108" y="170" font-size="14">👑</text><text x="128" y="170" font-size="14">👑</text><text x="148" y="170" font-size="14">👑</text>
+        </g>
+      </svg>
+    </div>
+    <div class="palace-progress" id="palaceProgress"></div>
+    <!-- Unicorn bar lives inside the collapsible too -->
+    <div class="unicorn-inner">
+      <div class="unicorn-label">🦄 Collect 5 for a Princess! 👸</div>
+      <div class="unicorn-bar" id="unicornBar">
+        <span style="color:#c084fc;font-size:0.8rem;font-weight:700;">Answer bonus questions to win unicorns!</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="princess-section" id="princessSection">
+  <div class="princess-label">👸 My Disney Princesses 👸</div>
+  <div class="princess-bar" id="princessBar"></div>
+</div>
+
+<div class="game-container">
+  <div class="score-bar">
+    <div class="score-item">⭐ <span class="score-val" id="scoreDisplay">0</span></div>
+    <div class="score-item">🏆 Lv <span class="score-val" id="levelDisplay">1</span></div>
+    <div class="score-item" id="streakItem">🔥 <span id="streakDisplay">—</span></div>
+  </div>
+
+  <div class="bonus-banner" id="bonusBanner">🌟 BONUS ROUND — Win a Unicorn! 🦄</div>
+  <div class="tabs" id="tabs"></div>
+
+  <div class="question-card" id="questionCard">
+    <span class="question-picture" id="questionPicture" onclick="speakCurrentQuestion()" title="Tap to hear the question!">🦄</span>
+    <div class="question-text" id="questionText">Tap the picture to hear the question!</div>
+    <div class="question-hint" id="questionHint"></div>
+    <div class="options-grid" id="optionsGrid"></div>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+  <div class="story-panel" id="storyPanel">
+    <span class="story-pic" id="storyPic">🏰</span>
+    <div class="story-text" id="storyText"></div>
+    <button class="story-speak-btn" onclick="speakText(document.getElementById('storyText').textContent)">🔊 Read the story!</button>
+  </div>
+  <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next ✨</button>
+  <div style="height:18px;"></div>
+  <button class="finish-btn" onclick="confirmFinish()">🏁 Finish Session</button>
+</div>
+
+<div class="answer-burst" id="answerBurst"><div class="burst-emoji" id="burstEmoji">⭐</div></div>
+
+<!-- SESSION SUMMARY -->
+<div class="session-summary" id="sessionSummary">
+  <span class="summary-emoji" id="summaryEmoji">🌟</span>
+  <div class="summary-title" id="summaryTitle">Great Session!</div>
+  <div style="color:#7e22ce;font-weight:700;font-size:0.9rem;margin-bottom:4px;" id="summarySubtitle"></div>
+  <div class="summary-stats">
+    <div class="stat-card">
+      <span class="stat-icon">⭐</span>
+      <div class="stat-num" id="sumStars">0</div>
+      <div class="stat-lbl">Stars Earned</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">✅</span>
+      <div class="stat-num" id="sumCorrect">0</div>
+      <div class="stat-lbl">Correct Answers</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">🔥</span>
+      <div class="stat-num" id="sumBestStreak">0</div>
+      <div class="stat-lbl">Best Streak</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">🦄</span>
+      <div class="stat-num" id="sumUnicorns">0</div>
+      <div class="stat-lbl">Unicorns Won</div>
+    </div>
+  </div>
+  <div class="cat-breakdown" id="catBreakdown">
+    <h3>⭐ How did you do?</h3>
+    <div id="catBarsContainer"></div>
+  </div>
+  <div class="summary-btns">
+    <button class="sum-btn secondary" onclick="openDashboard()">📊 See My Progress</button>
+    <button class="sum-btn primary" onclick="closeSummary()">Keep Playing! 🦄</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+  <div class="dash-header">
+    <div class="dash-title">📊 My Progress</div>
+    <p style="color:#7e22ce;font-weight:700;font-size:0.85rem;margin-top:4px;">Look how much you've learned! 🌟</p>
+  </div>
+  <div class="dash-body">
+
+    <!-- Daily Streak -->
+    <div class="dash-section">
+      <h3>🔥 Daily Streak</h3>
+      <div class="streak-display">
+        <div>
+          <div class="streak-big" id="dashStreakNum">0</div>
+          <div class="streak-sub">days in a row!</div>
+        </div>
+        <div style="font-size:2.5rem;">🔥</div>
+      </div>
+      <div class="streak-days" id="streakDots"></div>
+    </div>
+
+    <!-- Stars over time chart -->
+    <div class="dash-section">
+      <h3>⭐ Stars This Week</h3>
+      <div class="stars-chart" id="starsChart"></div>
+    </div>
+
+    <!-- Visual reward chart -->
+    <div class="dash-section">
+      <h3>🏆 Star Collection</h3>
+      <div class="reward-grid" id="rewardGrid"></div>
+      <div class="reward-total" id="rewardTotal"></div>
+    </div>
+
+    <!-- Sticker Book -->
+    <div class="dash-section">
+      <h3>🌟 My Sticker Book</h3>
+      <p style="font-size:0.78rem;color:#a855f7;font-weight:700;margin-bottom:10px;">Earn a sticker every 5 correct answers!</p>
+      <div id="stickerGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;"></div>
+    </div>
+
+    <!-- Category performance -->
+    <div class="dash-section">
+      <h3>📚 Subject Scores</h3>
+      <div id="dashCatBars"></div>
+    </div>
+
+  </div>
+  <button class="dash-close" onclick="closeDashboard()">Back to Playing! 🦄</button>
+  <button class="dash-close" style="background:linear-gradient(135deg,#9333ea,#db2777);margin-top:8px;" onclick="closeDashboard();openPassport();">🗺️ View My Passport</button>
+</div>
+
+<div class="celebration" id="celebration">
+  <div class="celeb-emoji-wrap" id="celebEmoji">🌟</div>
+  <div id="celebPalaceWrap" style="display:none;"></div>
+  <h2 id="celebTitle">Amazing!</h2>
+  <p id="celebMsg">You earned a palace piece!</p>
+  <button class="celeb-continue" onclick="closeCelebration()">Keep Going! 🦄</button>
+</div>
+
+<!-- LEARNING PASSPORT -->
+<div class="passport" id="passportScreen">
+  <div class="passport-inner">
+    <div class="passport-title">🗺️ My Learning Passport</div>
+    <div class="passport-sub">Get 10 correct answers in each subject to earn your stamp!</div>
+    <div class="passport-grid" id="passportGrid"></div>
+  </div>
+  <button class="passport-close" onclick="closePassport()">Back to Playing! 🦄</button>
+</div>
+
+<!-- THEME PICKER -->
+<div class="theme-picker" id="themePicker">
+  <h2>🏰 Choose Your Palace!</h2>
+  <p>Pick a magical world to build!</p>
+  <div class="theme-options">
+    <div class="theme-card selected" id="theme-disney" onclick="selectTheme('disney')">
+      <span class="theme-emoji">👸</span>
+      <div class="theme-name">Disney Palace</div>
+      <div class="theme-desc">Classic fairy-tale castle!</div>
+    </div>
+    <div class="theme-card" id="theme-ocean" onclick="selectTheme('ocean')">
+      <span class="theme-emoji">🧜</span>
+      <div class="theme-name">Ocean Kingdom</div>
+      <div class="theme-desc">Under the sea magic!</div>
+    </div>
+    <div class="theme-card" id="theme-forest" onclick="selectTheme('forest')">
+      <span class="theme-emoji">🧚</span>
+      <div class="theme-name">Enchanted Forest</div>
+      <div class="theme-desc">Woodland fairy magic!</div>
+    </div>
+    <div class="theme-card" id="theme-space" onclick="selectTheme('space')">
+      <span class="theme-emoji">🚀</span>
+      <div class="theme-name">Space Castle</div>
+      <div class="theme-desc">Stars and galaxies!</div>
+    </div>
+  </div>
+  <button style="margin-top:18px;padding:11px 32px;border-radius:999px;border:none;
+    background:linear-gradient(135deg,#db2777,#9333ea);color:white;font-family:'Fredoka One',cursive;
+    font-size:1rem;cursor:pointer;box-shadow:0 5px 0 #7e22ce;" onclick="closeThemePicker()">Keep Building! ✨</button>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// SPEECH
+// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// SPEECH  — robust cross-platform TTS
+// ─────────────────────────────────────────────
+let _voiceCache = null;
+let _audioUnlocked = false;
+let _speakQueue = [];
+let _speaking = false;
+
+// Strip ALL emoji and special chars that confuse TTS
+function stripForSpeech(text){
+  return text
+    .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')   // all emoji ranges
+    .replace(/[\u2600-\u27BF]/g, '')            // misc symbols
+    .replace(/[\uFE00-\uFE0F]/g, '')            // variation selectors
+    .replace(/[➕➖❓🔢]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getBestVoice(){
+  if(_voiceCache) return _voiceCache;
+  const voices = synth() ? synth().getVoices() : [];
+  if(!voices.length) return null;
+
+  const isEnglish = v => v.lang && v.lang.toLowerCase().startsWith('en');
+  const isBritish = v => /en.GB|en-GB/i.test(v.lang) ||
+    /kate|serena|emily|roisin|fiona|tessa|oliver|daniel|british|uk english/i.test(v.name);
+  const isFemale = v =>
+    /female|woman|girl|kate|serena|emily|roisin|moira|fiona|tessa|karen|samantha|victoria/i.test(v.name);
+
+  // Priority order: British female > British any > English female > English any > any
+  const pools = [
+    voices.filter(v => isEnglish(v) && isBritish(v) && isFemale(v)),
+    voices.filter(v => isEnglish(v) && isBritish(v)),
+    voices.filter(v => isEnglish(v) && isFemale(v)),
+    voices.filter(v => isEnglish(v)),
+    voices,
+  ];
+  for(const pool of pools){
+    if(pool.length){ _voiceCache = pool[0]; return pool[0]; }
+  }
+  return null;
+}
+
+function _setSpeakBtnState(active){
+  const btn = document.getElementById('speakBtn');
+  if(!btn) return;
+  btn.textContent = active ? '🔊 Speaking...' : '🔊 Read to me!';
+  btn.style.opacity = active ? '0.75' : '1';
+}
+
+function _processQueue(){
+  if(_speaking || !_speakQueue.length){ if(!_speakQueue.length) _setSpeakBtnState(false); return; }
+  if(!synth()){ _speakQueue=[]; _setSpeakBtnState(false); return; }
+  const {text, rate, pitch} = _speakQueue.shift();
+  const clean = stripForSpeech(text);
+  if(!clean){ _processQueue(); return; }
+  try {
+    const u = new SpeechSynthesisUtterance(clean);
+    u.rate  = rate  || 0.88;
+    u.pitch = pitch || 1.15;
+    u.volume = 1;
+    const v = getBestVoice();
+    if(v) u.voice = v;
+    _setSpeakBtnState(true);
+    u.onend = u.onerror = () => { _speaking = false; setTimeout(_processQueue, 80); };
+    _speaking = true;
+    synthSpeak(u);
+  } catch(e) { _speaking = false; _setSpeakBtnState(false); }
+}
+
+// Safe speech synthesis accessor — never throws even if undefined
+function synth(){ return window.speechSynthesis || null; }
+function synthCancel(){ try{ if(synth()) synth().cancel(); }catch(e){} }
+function synthSpeak(u){ try{ if(synth()) synth().speak(u); }catch(e){} }
+
+function speakText(text, rate, pitch){
+  if(!synth()) return;
+  _speakQueue = [];
+  _speaking = false;
+  synthCancel();
+  setTimeout(()=>{
+    _speakQueue.push({text, rate, pitch});
+    _processQueue();
+  }, 50);
+}
+
+function speakQueue(textArray, rate, pitch){
+  if(!synth()) return;
+  textArray.forEach(t => _speakQueue.push({text:t, rate, pitch}));
+  if(!_speaking) _processQueue();
+}
+
+function speakCurrentQuestion() {
+  if(!synth()) return;
+  _speakQueue = []; _speaking = false;
+  synthCancel();
+  setTimeout(()=>{ _speakQueue.push({text: currentSpeech}); _processQueue(); }, 50);
+}
+
+// Unlock audio on first user gesture (required on iOS/Android)
+function unlockAudio(){
+  if(_audioUnlocked) return;
+  _audioUnlocked = true;
+  try {
+    if(synth()){ synthSpeak(new SpeechSynthesisUtterance('')); }
+    if(window.AudioContext || window.webkitAudioContext){
+      const tmpCtx = new (window.AudioContext||window.webkitAudioContext)();
+      const buf = tmpCtx.createBuffer(1,1,22050);
+      const src = tmpCtx.createBufferSource();
+      src.buffer = buf; src.connect(tmpCtx.destination); src.start(0);
+      setTimeout(()=>tmpCtx.close(), 100);
+    }
+  } catch(e){}
+}
+document.addEventListener('touchstart', unlockAudio, {once:true, passive:true});
+document.addEventListener('mousedown',  unlockAudio, {once:true, passive:true});
+
+// Pre-load voices — keep trying until available
+let currentSpeech = '';
+function initVoices(){
+  if(!synth()) return;
+  synth().onvoiceschanged = ()=>{ _voiceCache=null; getBestVoice(); };
+  getBestVoice();
+  setTimeout(()=>{ _voiceCache=null; getBestVoice(); }, 500);
+  setTimeout(()=>{ _voiceCache=null; getBestVoice(); }, 1500);
+}
+initVoices();
+
+// ─────────────────────────────────────────────
+// AUDIO TONES
+// ─────────────────────────────────────────────
+let audioCtx;
+function ctx() { return audioCtx || (audioCtx = new (window.AudioContext||window.webkitAudioContext)()); }
+function tone(f,d,t='sine',v=0.28) {
+  try {
+    const c=ctx(), o=c.createOscillator(), g=c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type=t; o.frequency.value=f;
+    g.gain.setValueAtTime(v,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d);
+    o.start(); o.stop(c.currentTime+d);
+  } catch(e){}
+}
+function playCorrect() { tone(523,.12); setTimeout(()=>tone(659,.12),110); setTimeout(()=>tone(784,.2),220); setTimeout(()=>tone(1047,.3),360); }
+function playWrong()   { tone(330,.08); setTimeout(()=>tone(260,.3,'sawtooth',.12),100); }
+function playBonus()   { [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>tone(f,.14),i*75)); }
+function playPrincess(){ [523,587,659,698,784,880,988,1047].forEach((f,i)=>setTimeout(()=>tone(f,.18,'sine',.22),i*95)); }
+function playLevelUp()  { [392,494,587,698,784,988,1175].forEach((f,i)=>setTimeout(()=>tone(f,.22,'sine',.3),i*90)); }
+
+// ─────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────
+const categories = [
+  {id:'letters', label:'🔤 Letters'},
+  {id:'words',   label:'💬 Words'},
+  {id:'reading', label:'📚 Reading'},
+  {id:'rhymes',  label:'🎵 Rhymes'},
+  {id:'count',   label:'🔢 Count'},
+  {id:'math',    label:'➕ Math'},
+  {id:'colours', label:'🎨 Colours'},
+  {id:'animals', label:'🐾 Animals'},
+  {id:'world',   label:'🌍 World'},
+];
+
+const questions = {
+  letters:[
+    // Level 1 — identify the letter
+    {q:'What letter is this?',speech:'What letter is this? Tap your answer!',picture:'🍎',display:'A',options:['A','B','C','D'],answer:'A',hint:'A for Apple!',level:1},
+    {q:'What letter is this?',speech:'What letter is this?',picture:'🐝',display:'B',options:['D','B','P','R'],answer:'B',hint:'B for Bee!',level:1},
+    {q:'What letter is this?',speech:'What letter is this?',picture:'🐱',display:'C',options:['G','O','C','Q'],answer:'C',hint:'C for Cat!',level:1},
+    {q:'What letter is this?',speech:'What letter is this?',picture:'🐶',display:'D',options:['B','D','P','Q'],answer:'D',hint:'D for Dog!',level:1},
+    {q:'What letter is this?',speech:'What letter is this?',picture:'🐘',display:'E',options:['F','E','L','I'],answer:'E',hint:'E for Elephant!',level:1},
+    {q:'What letter is this?',speech:'What letter is this?',picture:'🌸',display:'F',options:['F','T','E','P'],answer:'F',hint:'F for Flower!',level:1},
+    {q:'What letter is this?',speech:'What letter is this?',picture:'🦒',display:'G',options:['C','G','J','Q'],answer:'G',hint:'G for Giraffe!',level:1},
+    {q:'What letter is this?',speech:'What letter is this?',picture:'🏠',display:'H',options:['H','N','M','K'],answer:'H',hint:'H for House!',level:1},
+    {q:'What letter is this?',speech:'What letter is this?',picture:'🍦',display:'I',options:['I','L','T','J'],answer:'I',hint:'I for Ice cream!',level:1},
+    {q:'What letter is this?',speech:'What letter is this?',picture:'🍬',display:'J',options:['I','J','L','T'],answer:'J',hint:'J for Jellybean!',level:1},
+    {q:'What letter is this?',speech:'What letter is this?',picture:'👑',display:'K',options:['K','R','X','H'],answer:'K',hint:'K for King!',level:1},
+    {q:'What letter is this?',speech:'What letter is this?',picture:'🦁',display:'L',options:['I','L','T','J'],answer:'L',hint:'L for Lion!',level:1},
+    {q:'What letter is this?',speech:'What letter is this?',picture:'🌙',display:'M',options:['M','N','W','V'],answer:'M',hint:'M for Moon!',level:1},
+    {q:'What letter is this?',speech:'What letter is this?',picture:'🪺',display:'N',options:['M','N','H','U'],answer:'N',hint:'N for Nest!',level:1},
+    {q:'What letter is this?',speech:'What letter is this?',picture:'🦉',display:'O',options:['O','Q','C','G'],answer:'O',hint:'O for Owl!',level:1},
+    {q:'What letter is this?',speech:'What letter is this?',picture:'🍕',display:'P',options:['P','B','D','Q'],answer:'P',hint:'P for Pizza!',level:1},
+    // Level 2 — what letter starts this word
+    {q:'What letter starts Apple?',speech:'What letter does Apple start with?',picture:'🍎',options:['A','B','C','D'],answer:'A',hint:'Apple starts with A!',level:2},
+    {q:'What letter starts Cat?',speech:'What letter does Cat start with?',picture:'🐱',options:['D','B','C','F'],answer:'C',hint:'Cat starts with C!',level:2},
+    {q:'What letter starts Dog?',speech:'What letter does Dog start with?',picture:'🐶',options:['D','B','G','P'],answer:'D',hint:'Dog starts with D!',level:2},
+    {q:'What letter starts Sun?',speech:'What letter does Sun start with?',picture:'☀️',options:['A','S','T','P'],answer:'S',hint:'Sun starts with S!',level:2},
+    {q:'What letter starts Moon?',speech:'What letter does Moon start with?',picture:'🌙',options:['N','M','B','P'],answer:'M',hint:'Moon starts with M!',level:2},
+    {q:'What letter starts Rain?',speech:'What letter does Rain start with?',picture:'🌧️',options:['R','B','W','P'],answer:'R',hint:'Rain starts with R!',level:2},
+    {q:'What letter starts Fish?',speech:'What letter does Fish start with?',picture:'🐟',options:['F','B','S','H'],answer:'F',hint:'Fish starts with F!',level:2},
+    {q:'What letter starts Hat?',speech:'What letter does Hat start with?',picture:'🎩',options:['H','A','T','B'],answer:'H',hint:'Hat starts with H!',level:2},
+    {q:'What letter starts Egg?',speech:'What letter does Egg start with?',picture:'🥚',options:['A','E','O','I'],answer:'E',hint:'Egg starts with E!',level:2},
+    {q:'What letter starts Pig?',speech:'What letter does Pig start with?',picture:'🐷',options:['B','G','P','D'],answer:'P',hint:'Pig starts with P!',level:2},
+    {q:'What letter starts Kite?',speech:'What letter does Kite start with?',picture:'🪁',options:['C','K','T','G'],answer:'K',hint:'Kite starts with K!',level:2},
+    {q:'What letter starts Lion?',speech:'What letter does Lion start with?',picture:'🦁',options:['L','R','N','M'],answer:'L',hint:'Lion starts with L!',level:2},
+    // Level 3 — trickier letters
+    {q:'What letter starts Unicorn?',speech:'What letter does Unicorn start with?',picture:'🦄',options:['U','A','O','E'],answer:'U',hint:'Unicorn starts with U!',level:3},
+    {q:'What letter starts Queen?',speech:'What letter does Queen start with?',picture:'👑',options:['K','C','Q','W'],answer:'Q',hint:'Queen starts with Q!',level:3},
+    {q:'What letter starts Zebra?',speech:'What letter does Zebra start with?',picture:'🦓',options:['S','X','Z','N'],answer:'Z',hint:'Zebra starts with Z!',level:3},
+    {q:'What letter starts Volcano?',speech:'What letter does Volcano start with?',picture:'🌋',options:['W','B','V','F'],answer:'V',hint:'Volcano starts with V!',level:3},
+    {q:'What letter starts Xylophone?',speech:'What letter does Xylophone start with?',picture:'🎵',options:['Z','X','S','Y'],answer:'X',hint:'X-ylophone starts with X!',level:3},
+    {q:'What letter starts Yak?',speech:'What letter does Yak start with?',picture:'🦬',options:['Y','J','A','W'],answer:'Y',hint:'Yak starts with Y!',level:3},
+    {q:'What letter starts Jellyfish?',speech:'What letter does Jellyfish start with?',picture:'🪼',options:['G','I','J','F'],answer:'J',hint:'Jellyfish starts with J!',level:3},
+    {q:'What letter starts Nurse?',speech:'What letter does Nurse start with?',picture:'👩‍⚕️',options:['M','N','H','R'],answer:'N',hint:'Nurse starts with N!',level:3},
+  ],
+  words:[
+    // Level 1 — simple 3-letter words
+    {q:'Which word matches?',speech:'Which word matches the picture?',picture:'🐱',options:['DOG','CAT','COW','PIG'],answer:'CAT',hint:'It meows!',level:1},
+    {q:'Which word matches?',speech:'Which word matches the picture?',picture:'☀️',options:['SUN','MUM','FUN','BUN'],answer:'SUN',hint:'It shines in the sky!',level:1},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'👒',options:['BAT','HAT','MAT','CAT'],answer:'HAT',hint:'Wear it on your head!',level:1},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🐶',options:['DOG','HOG','LOG','FOG'],answer:'DOG',hint:'It barks!',level:1},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🐄',options:['CAT','COW','CUP','COP'],answer:'COW',hint:'It says moo!',level:1},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🐖',options:['PAT','PIN','PIG','POT'],answer:'PIG',hint:'Oink oink!',level:1},
+    {q:'Which word matches?',speech:'Which word matches the picture?',picture:'🐟',options:['FISH','DISH','WISH','MISS'],answer:'FISH',hint:'It swims in the sea!',level:1},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🏺',options:['JAM','JOT','JUG','JIG'],answer:'JUG',hint:'Pour from it!',level:1},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🛏️',options:['BAD','BED','BID','BOD'],answer:'BED',hint:'Sleep in it!',level:1},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🚌',options:['BUS','BUT','BUN','BUG'],answer:'BUS',hint:'Ride on it!',level:1},
+    // Level 2 — 4-5 letter words
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🌹',options:['BED','RED','FED','LED'],answer:'RED',hint:"It's a colour!",level:2},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🌟',options:['MOON','STAR','SHIP','TREE'],answer:'STAR',hint:'It twinkles at night!',level:2},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'👑',options:['WAND','CROWN','CLOAK','RING'],answer:'CROWN',hint:'A princess wears it!',level:2},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🌙',options:['MOON','SOON','BOON','NOON'],answer:'MOON',hint:'It shines at night!',level:2},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🌿',options:['LEAF','SEED','BARK','ROOT'],answer:'LEAF',hint:'Grows on a tree!',level:2},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🐸',options:['FROG','TOAD','FISH','BIRD'],answer:'FROG',hint:'It says ribbit!',level:2},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🌊',options:['LAKE','POND','WAVE','RAIN'],answer:'WAVE',hint:'Surfers love these!',level:2},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🎂',options:['CAKE','BAKE','LAKE','FAKE'],answer:'CAKE',hint:'Yummy birthday treat!',level:2},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🎈',options:['BALLOON','BABOON','LAGOON','BUFFOON'],answer:'BALLOON',hint:'Floats up high!',level:2},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🐝',options:['BEE','FLY','ANT','BUG'],answer:'BEE',hint:'It makes honey!',level:2},
+    // Level 3 — longer words
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🌈',options:['CLOUD','RAIN','RAINBOW','STORM'],answer:'RAINBOW',hint:'After the rain!',level:3},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🦄',options:['HORSE','DRAGON','UNICORN','FAIRY'],answer:'UNICORN',hint:'It has a magic horn!',level:3},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🏰',options:['TOWER','PALACE','CASTLE','HOUSE'],answer:'CASTLE',hint:'A princess lives here!',level:3},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🦋',options:['FLUTTER','BEETLE','BUTTERFLY','DRAGONFLY'],answer:'BUTTERFLY',hint:'Beautiful wings!',level:3},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🌻',options:['DAISY','TULIP','SUNFLOWER','VIOLET'],answer:'SUNFLOWER',hint:'It faces the sun!',level:3},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🐙',options:['OCTOPUS','SQUID','STARFISH','JELLYFISH'],answer:'OCTOPUS',hint:'Eight wiggly arms!',level:3},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🦊',options:['WOLF','RABBIT','BEAR','FOX'],answer:'FOX',hint:'Clever and orange!',level:3},
+    {q:'Which word matches?',speech:'Which word matches?',picture:'🐧',options:['PARROT','PENGUIN','PELICAN','PIGEON'],answer:'PENGUIN',hint:'Lives on ice!',level:3},
+  ],
+  reading:[
+    // Level 1 — simple completions
+    {q:'The unicorn is...',speech:'The unicorn is... what? Tap your answer!',picture:'🦄✨',options:['Magic','Scary','Tiny','Sad'],answer:'Magic',hint:'Unicorns are magical!',level:1},
+    {q:'The princess wears a...',speech:'The princess wears a... what?',picture:'👸',options:['Hat','Crown','Scarf','Boots'],answer:'Crown',hint:'It goes on her head!',level:1},
+    {q:'The castle is very...',speech:'The castle is very... what?',picture:'🏰✨',options:['Small','Tall','Round','Dark'],answer:'Tall',hint:'Castles reach up high!',level:1},
+    {q:'The dog is...',speech:'The dog is... what?',picture:'🐶',options:['Sad','Angry','Happy','Scared'],answer:'Happy',hint:'Dogs wag their tails!',level:1},
+    {q:'The sun is very...',speech:'The sun is very... what?',picture:'☀️',options:['Cold','Dark','Bright','Wet'],answer:'Bright',hint:'It lights up the sky!',level:1},
+    {q:'The flowers are...',speech:'The flowers are... what?',picture:'🌸🌺',options:['Loud','Pretty','Heavy','Tiny'],answer:'Pretty',hint:'Gardens are lovely!',level:1},
+    {q:'The star is...',speech:'The star is... what?',picture:'⭐',options:['Noisy','Shiny','Muddy','Heavy'],answer:'Shiny',hint:'Stars glitter in the sky!',level:1},
+    {q:'The rainbow has many...',speech:'The rainbow has many... what?',picture:'🌈',options:['Shapes','Colours','Sounds','Smells'],answer:'Colours',hint:'Look at all those colours!',level:1},
+    // Level 2 — listen for key word
+    {q:'The cat SAT on the...',speech:'The cat sat on the... what?',picture:'🐱',options:['Chair','Mat','Bed','Box'],answer:'Mat',hint:'Listen for SAT on the...!',level:2},
+    {q:'She RIDES her unicorn.',speech:'What does she do? She... what?',picture:'👸🦄',options:['Feeds it','Rides it','Pets it','Hugs it'],answer:'Rides it',hint:'Listen for RIDES!',level:2},
+    {q:'She found a MAGIC wand.',speech:'What did she find?',picture:'🪄',options:['A crown','A flower','A magic wand','A key'],answer:'A magic wand',hint:'Listen for MAGIC WAND!',level:2},
+    {q:'The frog JUMPS into the pond.',speech:'What does the frog do?',picture:'🐸💦',options:['Swims','Jumps','Sleeps','Eats'],answer:'Jumps',hint:'Listen for JUMPS!',level:2},
+    {q:'She wore her RED dress.',speech:'What colour was her dress?',picture:'👗',options:['Blue','Pink','Red','Gold'],answer:'Red',hint:'Listen for RED!',level:2},
+    {q:'The bird SINGS in the tree.',speech:'What does the bird do?',picture:'🐦🌳',options:['Flies','Sings','Sleeps','Eats'],answer:'Sings',hint:'Listen for SINGS!',level:2},
+    {q:'He gave her a BIG hug.',speech:'What kind of hug?',picture:'🤗',options:['Small','Tiny','Big','Quick'],answer:'Big',hint:'Listen for BIG!',level:2},
+    {q:'The bunny has SOFT fur.',speech:'What is the bunny\'s fur like?',picture:'🐰',options:['Hard','Rough','Soft','Wet'],answer:'Soft',hint:'Listen for SOFT!',level:2},
+    // Level 3 — more complex sentences
+    {q:'The stars are BRIGHT.',speech:'The stars are... what?',picture:'⭐🌙',options:['Dark','Bright','Cold','Small'],answer:'Bright',hint:'Stars twinkle and are...',level:3},
+    {q:'The dragon can FLY very HIGH.',speech:'The dragon can fly very... what?',picture:'🐉',options:['Fast','High','Far','Low'],answer:'High',hint:'Listen for HIGH!',level:3},
+    {q:'The fairy has SPARKLY wings.',speech:'What kind of wings does the fairy have?',picture:'🧚',options:['Big','Tiny','Sparkly','Broken'],answer:'Sparkly',hint:'Listen for SPARKLY!',level:3},
+    {q:'The princess RAN to the castle.',speech:'What did the princess do?',picture:'👸🏰',options:['Walked','Ran','Flew','Skipped'],answer:'Ran',hint:'Listen for RAN!',level:3},
+    {q:'The wizard made a POTION.',speech:'What did the wizard make?',picture:'🧙‍♂️',options:['A spell','A potion','A wand','A hat'],answer:'A potion',hint:'Listen for POTION!',level:3},
+    {q:'The mermaid SWAM in the deep sea.',speech:'Where did the mermaid swim?',picture:'🧜',options:['In a lake','In a river','In the deep sea','In a pond'],answer:'In the deep sea',hint:'Listen for DEEP SEA!',level:3},
+    {q:'The magic mirror said she was BEAUTIFUL.',speech:'What did the magic mirror say she was?',picture:'🪞✨',options:['Clever','Strong','Beautiful','Brave'],answer:'Beautiful',hint:'Listen for BEAUTIFUL!',level:3},
+    // Extra Level 1
+    {q:'The butterfly is...',speech:'The butterfly is... what?',picture:'🦋',options:['Loud','Colourful','Heavy','Noisy'],answer:'Colourful',hint:'Look at those wings!',level:1},
+    {q:'The moon is...',speech:'The moon is... what?',picture:'🌙',options:['Hot','Bright','Round','Cold'],answer:'Round',hint:'Look at its shape!',level:1},
+    {q:'The puppy is very...',speech:'The puppy is very... what?',picture:'🐶',options:['Big','Fluffy','Loud','Slow'],answer:'Fluffy',hint:'So soft to touch!',level:1},
+    // Extra Level 2
+    {q:'The rabbit HOPPED over the log.',speech:'What did the rabbit do?',picture:'🐰',options:['Ran','Hopped','Swam','Flew'],answer:'Hopped',hint:'Listen for HOPPED!',level:2},
+    {q:'The knight wore SHINY armour.',speech:'What was the knight\'s armour like?',picture:'⚔️',options:['Old','Shiny','Dark','Heavy'],answer:'Shiny',hint:'Listen for SHINY!',level:2},
+    {q:'The dragon breathed FIRE.',speech:'What did the dragon breathe?',picture:'🐉',options:['Ice','Water','Fire','Smoke'],answer:'Fire',hint:'Listen for FIRE!',level:2},
+    // Extra Level 3
+    {q:'The owl SLEEPS during the day.',speech:'When does the owl sleep?',picture:'🦉',options:['At night','At dawn','During the day','In winter'],answer:'During the day',hint:'Owls are awake at night!',level:3},
+    {q:'The princess FOUND a golden key.',speech:'What did the princess find?',picture:'🗝️',options:['A crown','A wand','A golden key','A map'],answer:'A golden key',hint:'Listen for GOLDEN KEY!',level:3},
+    {q:'The unicorn galloped THROUGH the forest.',speech:'Where did the unicorn gallop?',picture:'🦄🌲',options:['Over the hill','Under the bridge','Through the forest','Into the lake'],answer:'Through the forest',hint:'Listen for THROUGH THE FOREST!',level:3},
+  ],
+  count:[
+    // Level 1 — count up to 5
+    {q:'How many stars?',speech:'How many stars can you count?',picture:'⭐⭐⭐',options:['1','2','3','4'],answer:'3',hint:'Count them!',level:1},
+    {q:'How many hearts?',speech:'How many hearts?',picture:'❤️❤️',options:['1','2','3','4'],answer:'2',hint:'Count the hearts!',level:1},
+    {q:'How many flowers?',speech:'How many flowers?',picture:'🌸🌸🌸🌸',options:['2','3','4','5'],answer:'4',hint:'Count the flowers!',level:1},
+    {q:'How many crowns?',speech:'How many crowns?',picture:'👑👑👑',options:['1','2','3','4'],answer:'3',hint:'Count the crowns!',level:1},
+    {q:'How many moons?',speech:'How many moons?',picture:'🌙🌙',options:['1','2','3','4'],answer:'2',hint:'Count the moons!',level:1},
+    {q:'How many apples?',speech:'How many apples?',picture:'🍎🍎🍎🍎🍎',options:['3','4','5','6'],answer:'5',hint:'Count the apples!',level:1},
+    {q:'How many butterflies?',speech:'How many butterflies?',picture:'🦋🦋',options:['1','2','3','4'],answer:'2',hint:'Count the butterflies!',level:1},
+    {q:'How many rainbows?',speech:'How many rainbows?',picture:'🌈🌈🌈',options:['1','2','3','4'],answer:'3',hint:'Count the rainbows!',level:1},
+    {q:'How many suns?',speech:'How many suns?',picture:'☀️',options:['1','2','3','4'],answer:'1',hint:'Just one sun!',level:1},
+    {q:'How many cats?',speech:'How many cats?',picture:'🐱🐱🐱🐱',options:['2','3','4','5'],answer:'4',hint:'Count the cats!',level:1},
+    // Level 2 — count to 10, and sequences
+    {q:'How many unicorns?',speech:'How many unicorns?',picture:'🦄🦄🦄🦄🦄',options:['3','4','5','6'],answer:'5',hint:'Count the unicorns!',level:2},
+    {q:'What comes after 3?',speech:'What number comes after three?',picture:'1️⃣2️⃣3️⃣❓',options:['2','4','5','6'],answer:'4',hint:'1, 2, 3, ...?',level:2},
+    {q:'What comes after 5?',speech:'What number comes after five?',picture:'5️⃣❓',options:['4','6','7','8'],answer:'6',hint:'5, then...?',level:2},
+    {q:'What comes before 3?',speech:'What number comes before three?',picture:'❓3️⃣',options:['1','2','4','5'],answer:'2',hint:'?, 2, 3...',level:2},
+    {q:'What comes after 7?',speech:'What number comes after seven?',picture:'7️⃣❓',options:['6','8','9','10'],answer:'8',hint:'7, then...?',level:2},
+    {q:'How many frogs?',speech:'How many frogs?',picture:'🐸🐸🐸🐸🐸🐸',options:['4','5','6','7'],answer:'6',hint:'Count carefully!',level:2},
+    {q:'What comes before 6?',speech:'What number comes before six?',picture:'❓6️⃣',options:['4','5','7','8'],answer:'5',hint:'?, 5, 6...',level:2},
+    {q:'What comes after 4?',speech:'What number comes after four?',picture:'4️⃣❓',options:['3','5','6','7'],answer:'5',hint:'4, then...?',level:2},
+    {q:'How many dogs?',speech:'How many dogs?',picture:'🐶🐶🐶🐶🐶🐶🐶',options:['5','6','7','8'],answer:'7',hint:'Count the dogs!',level:2},
+    // Level 3 — bigger numbers
+    {q:'How many stars?',speech:'How many stars can you count?',picture:'⭐⭐⭐⭐⭐⭐',options:['4','5','6','7'],answer:'6',hint:'Count carefully!',level:3},
+    {q:'What comes after 8?',speech:'What number comes after eight?',picture:'8️⃣❓',options:['7','9','10','6'],answer:'9',hint:'8, then...?',level:3},
+    {q:'What comes before 10?',speech:'What number comes before ten?',picture:'❓🔟',options:['8','9','11','7'],answer:'9',hint:'?, 9, 10...',level:3},
+    {q:'What comes after 9?',speech:'What number comes after nine?',picture:'9️⃣❓',options:['8','10','11','7'],answer:'10',hint:'9, then...?',level:3},
+    {q:'How many hearts?',speech:'How many hearts?',picture:'❤️❤️❤️❤️❤️❤️❤️❤️',options:['6','7','8','9'],answer:'8',hint:'Count every heart!',level:3},
+    {q:'What comes before 8?',speech:'What number comes before eight?',picture:'❓8️⃣',options:['6','7','9','5'],answer:'7',hint:'?, 7, 8...',level:3},
+    // Extra Level 1
+    {q:'How many balloons?',speech:'How many balloons?',picture:'🎈🎈🎈🎈🎈',options:['3','4','5','6'],answer:'5',hint:'Count the balloons!',level:1},
+    {q:'How many ducks?',speech:'How many ducks?',picture:'🦆🦆',options:['1','2','3','4'],answer:'2',hint:'Count the ducks!',level:1},
+    {q:'How many fish?',speech:'How many fish can you see?',picture:'🐟🐟🐟',options:['2','3','4','5'],answer:'3',hint:'Count the fish!',level:1},
+    // Extra Level 2
+    {q:'What comes after 6?',speech:'What number comes after six?',picture:'6️⃣❓',options:['5','7','8','9'],answer:'7',hint:'6, then...?',level:2},
+    {q:'How many penguins?',speech:'How many penguins?',picture:'🐧🐧🐧🐧🐧🐧🐧🐧',options:['6','7','8','9'],answer:'8',hint:'Count every penguin!',level:2},
+    {q:'What comes before 5?',speech:'What number comes before five?',picture:'❓5️⃣',options:['3','4','6','7'],answer:'4',hint:'?, 4, 5...',level:2},
+    // Extra Level 3
+    {q:'What comes after 10?',speech:'What number comes after ten?',picture:'🔟❓',options:['9','11','12','13'],answer:'11',hint:'10, then...?',level:3},
+    {q:'How many gems?',speech:'How many gems can you count?',picture:'💎💎💎💎💎💎💎💎💎',options:['7','8','9','10'],answer:'9',hint:'Count every gem!',level:3},
+    {q:'What is 10 - 3?',speech:'Ten take away three equals what?',picture:'🔟➖3️⃣',options:['6','7','8','9'],answer:'7',hint:'Ten, take away three!',level:3},
+  ],
+  math:[
+    // Level 1 — adding to 5
+    {q:'1 + 1 = ?',speech:'One plus one equals what?',picture:'⭐➕⭐',options:['1','2','3','4'],answer:'2',hint:'One star and one star!',level:1},
+    {q:'2 + 1 = ?',speech:'Two plus one equals what?',picture:'⭐⭐➕⭐',options:['2','3','4','5'],answer:'3',hint:'Two and one more!',level:1},
+    {q:'1 + 2 = ?',speech:'One plus two equals what?',picture:'🌸➕🌸🌸',options:['2','3','4','5'],answer:'3',hint:'One flower and two more!',level:1},
+    {q:'2 + 2 = ?',speech:'Two plus two equals what?',picture:'🦄🦄➕🦄🦄',options:['2','3','4','5'],answer:'4',hint:'Two unicorns plus two!',level:1},
+    {q:'1 + 3 = ?',speech:'One plus three equals what?',picture:'⭐➕⭐⭐⭐',options:['3','4','5','6'],answer:'4',hint:'One and three more!',level:1},
+    {q:'2 + 3 = ?',speech:'Two plus three equals what?',picture:'🌙🌙➕🌙🌙🌙',options:['4','5','6','7'],answer:'5',hint:'Two moons and three more!',level:1},
+    {q:'1 + 4 = ?',speech:'One plus four equals what?',picture:'🌸➕🌸🌸🌸🌸',options:['4','5','6','7'],answer:'5',hint:'One and four more!',level:1},
+    // Level 2 — adding and subtracting to 8
+    {q:'3 + 1 = ?',speech:'Three plus one equals what?',picture:'👑👑👑➕👑',options:['3','4','5','6'],answer:'4',hint:'Three crowns plus one!',level:2},
+    {q:'4 - 1 = ?',speech:'Four take away one equals what?',picture:'🌸🌸🌸🌸➖🌸',options:['2','3','4','5'],answer:'3',hint:'Four flowers, take one away!',level:2},
+    {q:'3 - 1 = ?',speech:'Three take away one equals what?',picture:'⭐⭐⭐➖⭐',options:['1','2','3','4'],answer:'2',hint:'Three stars, take one away!',level:2},
+    {q:'4 - 2 = ?',speech:'Four take away two equals what?',picture:'👑👑👑👑➖👑👑',options:['1','2','3','4'],answer:'2',hint:'Four crowns, take two away!',level:2},
+    {q:'3 + 2 = ?',speech:'Three plus two equals what?',picture:'🦄🦄🦄➕🦄🦄',options:['4','5','6','7'],answer:'5',hint:'Three unicorns plus two!',level:2},
+    {q:'4 + 2 = ?',speech:'Four plus two equals what?',picture:'⭐⭐⭐⭐➕⭐⭐',options:['5','6','7','8'],answer:'6',hint:'Four stars plus two more!',level:2},
+    {q:'5 - 1 = ?',speech:'Five take away one equals what?',picture:'🌟🌟🌟🌟🌟➖🌟',options:['3','4','5','6'],answer:'4',hint:'Five stars, take one away!',level:2},
+    {q:'5 - 2 = ?',speech:'Five take away two equals what?',picture:'👑👑👑👑👑➖👑👑',options:['2','3','4','5'],answer:'3',hint:'Five crowns, take two away!',level:2},
+    {q:'3 + 3 = ?',speech:'Three plus three equals what?',picture:'🌸🌸🌸➕🌸🌸🌸',options:['5','6','7','8'],answer:'6',hint:'Three and three more!',level:2},
+    {q:'6 - 2 = ?',speech:'Six take away two equals what?',picture:'⭐⭐⭐⭐⭐⭐➖⭐⭐',options:['3','4','5','6'],answer:'4',hint:'Six stars, take two away!',level:2},
+    // Level 3 — adding and subtracting to 10
+    {q:'4 + 3 = ?',speech:'Four plus three equals what?',picture:'🦄🦄🦄🦄➕🦄🦄🦄',options:['6','7','8','9'],answer:'7',hint:'Four unicorns plus three!',level:3},
+    {q:'5 + 2 = ?',speech:'Five plus two equals what?',picture:'🌟🌟🌟🌟🌟➕🌟🌟',options:['6','7','8','9'],answer:'7',hint:'Five and two more!',level:3},
+    {q:'4 + 4 = ?',speech:'Four plus four equals what?',picture:'👑👑👑👑➕👑👑👑👑',options:['6','7','8','9'],answer:'8',hint:'Four and four more!',level:3},
+    {q:'5 + 3 = ?',speech:'Five plus three equals what?',picture:'⭐⭐⭐⭐⭐➕⭐⭐⭐',options:['7','8','9','10'],answer:'8',hint:'Five stars and three more!',level:3},
+    {q:'5 + 5 = ?',speech:'Five plus five equals what?',picture:'🌸🌸🌸🌸🌸➕🌸🌸🌸🌸🌸',options:['8','9','10','11'],answer:'10',hint:'Five and five more — can you count them?',level:3},
+    {q:'7 - 2 = ?',speech:'Seven take away two equals what?',picture:'🦄🦄🦄🦄🦄🦄🦄➖🦄🦄',options:['4','5','6','7'],answer:'5',hint:'Seven unicorns, take two away!',level:3},
+    {q:'8 - 3 = ?',speech:'Eight take away three equals what?',picture:'⭐⭐⭐⭐⭐⭐⭐⭐➖⭐⭐⭐',options:['4','5','6','7'],answer:'5',hint:'Eight stars, take three away!',level:3},
+    {q:'6 + 4 = ?',speech:'Six plus four equals what?',picture:'🌟🌟🌟🌟🌟🌟➕🌟🌟🌟🌟',options:['8','9','10','11'],answer:'10',hint:'Six and four — count them all!',level:3},
+    // Extra Level 1
+    {q:'3 + 1 = ?',speech:'Three plus one equals what?',picture:'⭐⭐⭐➕⭐',options:['2','3','4','5'],answer:'4',hint:'Three and one more!',level:1},
+    {q:'2 + 0 = ?',speech:'Two plus zero equals what?',picture:'🌸🌸➕',options:['1','2','3','4'],answer:'2',hint:'Nothing added changes nothing!',level:1},
+    // Extra Level 2
+    {q:'6 - 3 = ?',speech:'Six take away three equals what?',picture:'⭐⭐⭐⭐⭐⭐➖⭐⭐⭐',options:['2','3','4','5'],answer:'3',hint:'Six stars, take three away!',level:2},
+    {q:'4 + 3 = ?',speech:'Four plus three equals what?',picture:'🌙🌙🌙🌙➕🌙🌙🌙',options:['5','6','7','8'],answer:'7',hint:'Four and three more!',level:2},
+    {q:'7 - 3 = ?',speech:'Seven take away three equals what?',picture:'👑👑👑👑👑👑👑➖👑👑👑',options:['3','4','5','6'],answer:'4',hint:'Seven crowns, take three!',level:2},
+    // Extra Level 3
+    {q:'9 - 4 = ?',speech:'Nine take away four equals what?',picture:'🦄🦄🦄🦄🦄🦄🦄🦄🦄➖🦄🦄🦄🦄',options:['4','5','6','7'],answer:'5',hint:'Nine unicorns, take four away!',level:3},
+    {q:'3 + 7 = ?',speech:'Three plus seven equals what?',picture:'⭐⭐⭐➕⭐⭐⭐⭐⭐⭐⭐',options:['8','9','10','11'],answer:'10',hint:'Three and seven make ten!',level:3},
+    {q:'10 - 5 = ?',speech:'Ten take away five equals what?',picture:'🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟➖🌟🌟🌟🌟🌟',options:['4','5','6','7'],answer:'5',hint:'Half of ten!',level:3},
+  ],
+  rhymes:[
+    {q:'Which word rhymes with CAT?',speech:'Which word rhymes with CAT? Cat, cat...',picture:'🐱',options:['Dog','Hat','Sun','Bee'],answer:'Hat',hint:'Cat... hat! They rhyme!',level:1},
+    {q:'Which word rhymes with BEE?',speech:'Which word rhymes with BEE? Bee, bee...',picture:'🐝',options:['Cat','Dog','Tree','Fish'],answer:'Tree',hint:'Bee... tree! They rhyme!',level:1},
+    {q:'Which word rhymes with SUN?',speech:'Which word rhymes with SUN? Sun, sun...',picture:'☀️',options:['Moon','Run','Star','Sky'],answer:'Run',hint:'Sun... run! They rhyme!',level:1},
+    {q:'Which word rhymes with DOG?',speech:'Which word rhymes with DOG? Dog, dog...',picture:'🐶',options:['Cat','Frog','Bird','Fish'],answer:'Frog',hint:'Dog... frog! They rhyme!',level:1},
+    {q:'Which word rhymes with CAKE?',speech:'Which word rhymes with CAKE? Cake, cake...',picture:'🎂',options:['Pie','Bun','Lake','Bread'],answer:'Lake',hint:'Cake... lake! They rhyme!',level:1},
+    {q:'Which word rhymes with STAR?',speech:'Which word rhymes with STAR? Star, star...',picture:'⭐',options:['Moon','Car','Sun','Cloud'],answer:'Car',hint:'Star... car! They rhyme!',level:1},
+    {q:'Which word rhymes with FISH?',speech:'Which word rhymes with FISH? Fish, fish...',picture:'🐟',options:['Wish','Bird','Frog','Snail'],answer:'Wish',hint:'Fish... wish! They rhyme!',level:1},
+    {q:'Which word rhymes with PIG?',speech:'Which word rhymes with PIG? Pig, pig...',picture:'🐷',options:['Cow','Hen','Big','Duck'],answer:'Big',hint:'Pig... big! They rhyme!',level:1},
+    {q:'Which word rhymes with MOON?',speech:'Which word rhymes with MOON? Moon, moon...',picture:'🌙',options:['Star','Sun','Spoon','Cloud'],answer:'Spoon',hint:'Moon... spoon! They rhyme!',level:2},
+    {q:'Which word rhymes with RAIN?',speech:'Which word rhymes with RAIN? Rain, rain...',picture:'🌧️',options:['Snow','Wind','Train','Cloud'],answer:'Train',hint:'Rain... train! They rhyme!',level:2},
+    {q:'Which word rhymes with ROSE?',speech:'Which word rhymes with ROSE? Rose, rose...',picture:'🌹',options:['Leaf','Toes','Petal','Stem'],answer:'Toes',hint:'Rose... toes! They rhyme!',level:2},
+    {q:'Which word rhymes with FROG?',speech:'Which word rhymes with FROG? Frog, frog...',picture:'🐸',options:['Toad','Fish','Log','Newt'],answer:'Log',hint:'Frog... log! They rhyme!',level:2},
+    {q:'Which word rhymes with BEAR?',speech:'Which word rhymes with BEAR? Bear, bear...',picture:'🐻',options:['Fox','Deer','Hair','Wolf'],answer:'Hair',hint:'Bear... hair! They rhyme!',level:2},
+    {q:'Which word rhymes with KING?',speech:'Which word rhymes with KING? King, king...',picture:'👑',options:['Queen','Ring','Crown','Prince'],answer:'Ring',hint:'King... ring! They rhyme!',level:2},
+    {q:'Which word rhymes with FLOWER?',speech:'Which word rhymes with FLOWER? Flower, flower...',picture:'🌸',options:['Petal','Garden','Power','Leaf'],answer:'Power',hint:'Flower... power! They rhyme!',level:3},
+    {q:'Which rhymes with DRAGON?',speech:'Which word rhymes with DRAGON? Dragon, dragon...',picture:'🐉',options:['Wizard','Wagon','Knight','Castle'],answer:'Wagon',hint:'Dragon... wagon! They rhyme!',level:3},
+    {q:'Which word rhymes with FAIRY?',speech:'Which word rhymes with FAIRY? Fairy, fairy...',picture:'🧚',options:['Magic','Wand','Hairy','Wings'],answer:'Hairy',hint:'Fairy... hairy! They rhyme!',level:3},
+    {q:'Which word rhymes with CASTLE?',speech:'Which word rhymes with CASTLE? Castle, castle...',picture:'🏰',options:['Tower','Tassel','Knight','Moat'],answer:'Tassel',hint:'Castle... tassel! They rhyme!',level:3},
+    {q:'Which word rhymes with NIGHT?',speech:'Which word rhymes with NIGHT? Night, night...',picture:'🌙',options:['Dark','Bright','Day','Dusk'],answer:'Bright',hint:'Night... bright! They rhyme!',level:3},
+    {q:'Which word rhymes with CROWN?',speech:'Which word rhymes with CROWN? Crown, crown...',picture:'👑',options:['King','Gown','Gold','Ring'],answer:'Gown',hint:'Crown... gown! They rhyme!',level:3},
+    {q:'Which word rhymes with MAGIC?',speech:'Which word rhymes with MAGIC? Magic, magic...',picture:'🪄',options:['Wand','Spell','Tragic','Star'],answer:'Tragic',hint:'Magic... tragic! They rhyme!',level:3},
+    {q:'Which word rhymes with RAINBOW?',speech:'Which word rhymes with RAINBOW? Rainbow, rainbow...',picture:'🌈',options:['Colour','Slow','Cloud','Rain'],answer:'Slow',hint:'Rainbow... slow! They rhyme!',level:3},
+  ],
+  colours:[
+    // Level 1 — name the colour
+    {q:'What colour is this?',speech:'What colour is this? Tap your answer!',picture:'🔴',options:['Red','Blue','Green','Yellow'],answer:'Red',hint:'Red like a fire engine!',level:1},
+    {q:'What colour is this?',speech:'What colour is this?',picture:'🔵',options:['Red','Blue','Pink','Purple'],answer:'Blue',hint:'Blue like the sky!',level:1},
+    {q:'What colour is this?',speech:'What colour is this?',picture:'🟡',options:['Orange','Green','Yellow','White'],answer:'Yellow',hint:'Yellow like the sun!',level:1},
+    {q:'What colour is this?',speech:'What colour is this?',picture:'🟢',options:['Blue','Yellow','Green','Brown'],answer:'Green',hint:'Green like the grass!',level:1},
+    {q:'What colour is this?',speech:'What colour is this?',picture:'🟠',options:['Red','Orange','Yellow','Pink'],answer:'Orange',hint:'Orange like an orange!',level:1},
+    {q:'What colour is this?',speech:'What colour is this?',picture:'🟣',options:['Blue','Pink','Purple','Red'],answer:'Purple',hint:'Purple is magical!',level:1},
+    {q:'What colour is this?',speech:'What colour is this?',picture:'🩷',options:['Red','Orange','Purple','Pink'],answer:'Pink',hint:'Pink like a flamingo!',level:1},
+    {q:'What colour is this?',speech:'What colour is this?',picture:'⬜',options:['Grey','Black','White','Silver'],answer:'White',hint:'White like snow!',level:1},
+    // Level 2 — match colour to object
+    {q:'What colour is a strawberry?',speech:'What colour is a strawberry?',picture:'🍓',options:['Blue','Yellow','Red','Green'],answer:'Red',hint:'Red and delicious!',level:2},
+    {q:'What colour is a banana?',speech:'What colour is a banana?',picture:'🍌',options:['Red','Yellow','Blue','Orange'],answer:'Yellow',hint:'Monkeys love it!',level:2},
+    {q:'What colour is an elephant?',speech:'What colour is an elephant?',picture:'🐘',options:['Pink','Blue','Grey','Brown'],answer:'Grey',hint:'Big and grey!',level:2},
+    {q:'What colour is a frog?',speech:'What colour is a frog?',picture:'🐸',options:['Red','Green','Yellow','Blue'],answer:'Green',hint:'Green and jumpy!',level:2},
+    {q:'What colour is a flamingo?',speech:'What colour is a flamingo?',picture:'🦩',options:['Blue','Purple','Yellow','Pink'],answer:'Pink',hint:'Pretty and pink!',level:2},
+    {q:'What colour is a carrot?',speech:'What colour is a carrot?',picture:'🥕',options:['Red','Yellow','Orange','Purple'],answer:'Orange',hint:'Bunnies love them!',level:2},
+    {q:'What colour is the ocean?',speech:'What colour is the ocean?',picture:'🌊',options:['Green','Purple','Blue','Yellow'],answer:'Blue',hint:'Deep and beautiful!',level:2},
+    {q:'What colour is a sunflower?',speech:'What colour is a sunflower?',picture:'🌻',options:['Orange','Yellow','Red','White'],answer:'Yellow',hint:'Faces the sun!',level:2},
+    // Level 3 — mixing and harder concepts
+    {q:'Red and blue mixed make...?',speech:'If you mix red and blue paint together, what colour do you get?',picture:'🎨',options:['Green','Orange','Purple','Pink'],answer:'Purple',hint:'Magic colour mixing!',level:3},
+    {q:'Red and yellow mixed make...?',speech:'If you mix red and yellow paint together, what colour do you get?',picture:'🎨',options:['Green','Orange','Purple','Brown'],answer:'Orange',hint:'Sunny colour mixing!',level:3},
+    {q:'Blue and yellow mixed make...?',speech:'If you mix blue and yellow paint together, what colour do you get?',picture:'🎨',options:['Purple','Orange','Green','Brown'],answer:'Green',hint:'Nature colour mixing!',level:3},
+    {q:'How many colours in a rainbow?',speech:'How many colours are there in a rainbow?',picture:'🌈',options:['5','6','7','8'],answer:'7',hint:'Count the rainbow stripes!',level:3},
+    {q:'Which is NOT in a rainbow?',speech:'Which colour is NOT found in a rainbow?',picture:'🌈',options:['Red','Blue','Pink','Green'],answer:'Pink',hint:'Rainbows have 7 colours!',level:3},
+    {q:'What colour is a stormy sky?',speech:'What colour does the sky turn in a storm?',picture:'⛈️',options:['Pink','Yellow','Grey','Orange'],answer:'Grey',hint:'Dark and cloudy!',level:3},
+    {q:'What colour is chocolate?',speech:'What colour is chocolate?',picture:'🍫',options:['Black','Red','Brown','Orange'],answer:'Brown',hint:'Yummy and brown!',level:3},
+    {q:'What two colours make brown?',speech:'Which colours mixed together make brown?',picture:'🎨',options:['Red and blue','Yellow and blue','Red and yellow','Blue and green'],answer:'Red and yellow',hint:'Mix them and see!',level:3},
+  ],
+  animals:[
+    // Level 1 — name the animal
+    {q:'What animal is this?',speech:'What animal is this? Tap your answer!',picture:'🐘',options:['Lion','Elephant','Giraffe','Hippo'],answer:'Elephant',hint:'It has a long trunk!',level:1},
+    {q:'What animal is this?',speech:'What animal is this?',picture:'🦒',options:['Horse','Camel','Giraffe','Zebra'],answer:'Giraffe',hint:'The tallest animal!',level:1},
+    {q:'What animal is this?',speech:'What animal is this?',picture:'🐧',options:['Duck','Penguin','Parrot','Owl'],answer:'Penguin',hint:'Lives on ice!',level:1},
+    {q:'What animal is this?',speech:'What animal is this?',picture:'🦊',options:['Wolf','Dog','Fox','Cat'],answer:'Fox',hint:'Clever and orange!',level:1},
+    {q:'What animal is this?',speech:'What animal is this?',picture:'🐨',options:['Bear','Panda','Koala','Sloth'],answer:'Koala',hint:'Loves eucalyptus!',level:1},
+    {q:'What animal is this?',speech:'What animal is this?',picture:'🦓',options:['Horse','Donkey','Zebra','Pony'],answer:'Zebra',hint:'Black and white stripes!',level:1},
+    {q:'What animal is this?',speech:'What animal is this?',picture:'🦁',options:['Tiger','Cheetah','Leopard','Lion'],answer:'Lion',hint:'King of the jungle!',level:1},
+    {q:'What animal is this?',speech:'What animal is this?',picture:'🐙',options:['Squid','Jellyfish','Octopus','Crab'],answer:'Octopus',hint:'Eight wiggly arms!',level:1},
+    // Level 2 — where do they live
+    {q:'Where does a fish live?',speech:'Where does a fish live?',picture:'🐟',options:['Trees','Underground','Water','Sand'],answer:'Water',hint:'It swims!',level:2},
+    {q:'Where does a bird live?',speech:'Where does a bird build its nest?',picture:'🐦',options:['Underground','In a tree','In the sea','In a cave'],answer:'In a tree',hint:'Up high and safe!',level:2},
+    {q:'Where does a rabbit live?',speech:'Where does a rabbit live?',picture:'🐰',options:['In a tree','In the sea','Underground','In a cave'],answer:'Underground',hint:'It digs a burrow!',level:2},
+    {q:'Where does a polar bear live?',speech:'Where does a polar bear live?',picture:'🐻‍❄️',options:['Jungle','Desert','Arctic','Forest'],answer:'Arctic',hint:'Very cold and icy!',level:2},
+    {q:'Where does a monkey live?',speech:'Where does a monkey live?',picture:'🐒',options:['Desert','Jungle','Arctic','Ocean'],answer:'Jungle',hint:'Swings through trees!',level:2},
+    {q:'Where does a camel live?',speech:'Where does a camel live?',picture:'🐪',options:['Jungle','Arctic','Desert','Ocean'],answer:'Desert',hint:'Very hot and sandy!',level:2},
+    // Level 3 — what do they eat / animal facts
+    {q:'What do cows eat?',speech:'What do cows eat?',picture:'🐄',options:['Fish','Meat','Grass','Berries'],answer:'Grass',hint:'They munch in fields!',level:3},
+    {q:'What do lions eat?',speech:'What do lions eat?',picture:'🦁',options:['Grass','Berries','Leaves','Meat'],answer:'Meat',hint:'Lions are hunters!',level:3},
+    {q:'What do butterflies drink?',speech:'What do butterflies drink from flowers?',picture:'🦋',options:['Water','Milk','Nectar','Juice'],answer:'Nectar',hint:'Sweet flower juice!',level:3},
+    {q:'How many legs does a spider have?',speech:'How many legs does a spider have?',picture:'🕷️',options:['4','6','8','10'],answer:'8',hint:'More than an insect!',level:3},
+    {q:'Which animal sleeps all winter?',speech:'Which animal sleeps all through winter?',picture:'🐻',options:['Dog','Bear','Cat','Horse'],answer:'Bear',hint:'It hibernates!',level:3},
+    {q:'What is a baby cat called?',speech:'What is a baby cat called?',picture:'🐱',options:['Cub','Puppy','Kitten','Foal'],answer:'Kitten',hint:'Tiny and fluffy!',level:3},
+    {q:'What is a baby dog called?',speech:'What is a baby dog called?',picture:'🐶',options:['Kitten','Foal','Puppy','Cub'],answer:'Puppy',hint:'Bouncy and playful!',level:3},
+    // Extra Level 1
+    {q:'What animal is this?',speech:'What animal is this?',picture:'🐼',options:['Koala','Bear','Panda','Sloth'],answer:'Panda',hint:'Black and white and loves bamboo!',level:1},
+    {q:'What animal is this?',speech:'What animal is this?',picture:'🦅',options:['Parrot','Owl','Eagle','Hawk'],answer:'Eagle',hint:'King of the sky!',level:1},
+    {q:'What animal is this?',speech:'What animal is this?',picture:'🦔',options:['Mole','Rat','Hedgehog','Shrew'],answer:'Hedgehog',hint:'Covered in spikes!',level:1},
+    {q:'What animal is this?',speech:'What animal is this?',picture:'🦩',options:['Swan','Stork','Heron','Flamingo'],answer:'Flamingo',hint:'Pink and stands on one leg!',level:1},
+    // Extra Level 2
+    {q:'Where does a penguin live?',speech:'Where does a penguin live?',picture:'🐧',options:['Desert','Jungle','Antarctic','Forest'],answer:'Antarctic',hint:'Very cold and icy!',level:2},
+    {q:'Where does an eagle live?',speech:'Where does an eagle make its nest?',picture:'🦅',options:['Underground','In the sea','High cliffs','In a burrow'],answer:'High cliffs',hint:'High up with a great view!',level:2},
+    // Extra Level 3
+    {q:'What do pandas eat?',speech:'What do pandas eat?',picture:'🐼',options:['Meat','Fish','Bamboo','Leaves'],answer:'Bamboo',hint:'A type of tall grass!',level:3},
+    {q:'What is a baby sheep called?',speech:'What is a baby sheep called?',picture:'🐑',options:['Calf','Lamb','Kid','Foal'],answer:'Lamb',hint:'Fluffy and white!',level:3},
+    {q:'What is a baby horse called?',speech:'What is a baby horse called?',picture:'🐴',options:['Cub','Kitten','Foal','Lamb'],answer:'Foal',hint:'Long spindly legs!',level:3},
+    {q:'How many legs does an insect have?',speech:'How many legs does an insect have?',picture:'🐛',options:['4','6','8','10'],answer:'6',hint:'Less than a spider!',level:3},
+  ],
+  world:[
+    // Level 1 — shapes
+    {q:'What shape is this?',speech:'What shape is this? Tap your answer!',picture:'🔴',options:['Square','Triangle','Circle','Star'],answer:'Circle',hint:'Round like a ball!',level:1},
+    {q:'What shape is this?',speech:'What shape is this?',picture:'🟦',options:['Circle','Triangle','Rectangle','Square'],answer:'Square',hint:'Four equal sides!',level:1},
+    {q:'What shape is this?',speech:'What shape is this?',picture:'🔺',options:['Circle','Triangle','Square','Diamond'],answer:'Triangle',hint:'Three sides!',level:1},
+    {q:'What shape has 4 sides?',speech:'Which shape has four sides?',picture:'📐',options:['Circle','Triangle','Square','Pentagon'],answer:'Square',hint:'Count the sides!',level:1},
+    {q:'What shape is the sun?',speech:'What shape is the sun?',picture:'☀️',options:['Square','Triangle','Circle','Star'],answer:'Circle',hint:'Round and bright!',level:1},
+    {q:'What shape is a pizza slice?',speech:'What shape is a pizza slice?',picture:'🍕',options:['Square','Circle','Triangle','Rectangle'],answer:'Triangle',hint:'Point at the end!',level:1},
+    // Level 2 — seasons and weather
+    {q:'What falls from the sky in winter?',speech:'What falls from the sky in winter?',picture:'❄️',options:['Rain','Leaves','Snow','Hail'],answer:'Snow',hint:'Cold and white!',level:2},
+    {q:'Which season has flowers blooming?',speech:'Which season do flowers bloom in?',picture:'🌸',options:['Winter','Autumn','Spring','Summer'],answer:'Spring',hint:'After the cold winter!',level:2},
+    {q:'Which season is the hottest?',speech:'Which season is the hottest?',picture:'☀️',options:['Spring','Winter','Autumn','Summer'],answer:'Summer',hint:'Time for ice cream!',level:2},
+    {q:'What do leaves do in autumn?',speech:'What happens to leaves in autumn?',picture:'🍂',options:['Grow big','Turn green','Fall off','Bloom'],answer:'Fall off',hint:'They fall to the ground!',level:2},
+    {q:'What do you wear when raining?',speech:'What do you wear when it is raining?',picture:'🌧️',options:['Sunglasses','Swimsuit','Raincoat','Sunhat'],answer:'Raincoat',hint:'Keeps you dry!',level:2},
+    {q:'How many seasons are there?',speech:'How many seasons are there in a year?',picture:'🌍',options:['2','3','4','5'],answer:'4',hint:'Spring, Summer, Autumn, Winter!',level:2},
+    // Level 3 — body parts, opposites, world facts
+    {q:'How many eyes do you have?',speech:'How many eyes do you have?',picture:'👀',options:['1','2','3','4'],answer:'2',hint:'One on each side!',level:3},
+    {q:'What is the opposite of hot?',speech:'What is the opposite of hot?',picture:'🌡️',options:['Warm','Big','Cold','Fast'],answer:'Cold',hint:'Brrr!',level:3},
+    {q:'What is the opposite of big?',speech:'What is the opposite of big?',picture:'🐘🐭',options:['Tall','Small','Heavy','Round'],answer:'Small',hint:'Think of a tiny mouse!',level:3},
+    {q:'What is the opposite of day?',speech:'What is the opposite of day?',picture:'🌙',options:['Evening','Dusk','Night','Dawn'],answer:'Night',hint:'When we sleep!',level:3},
+    {q:'How many months in a year?',speech:'How many months are in a year?',picture:'📅',options:['10','11','12','13'],answer:'12',hint:'January through December!',level:3},
+    {q:'Which is tallest?',speech:'Which of these is the tallest?',picture:'🏔️',options:['Hill','Rock','Mountain','Tree'],answer:'Mountain',hint:'Reach up to the clouds!',level:3},
+    {q:'What gives us light at night?',speech:'What gives us light in the night sky?',picture:'🌙⭐',options:['The Sun','Clouds','The Moon','Rain'],answer:'The Moon',hint:'It glows silver at night!',level:3},
+    // Extra Level 1
+    {q:'What shape is a door?',speech:'What shape is a door?',picture:'🚪',options:['Circle','Triangle','Rectangle','Diamond'],answer:'Rectangle',hint:'Tall and narrow!',level:1},
+    {q:'What shape is a clock face?',speech:'What shape is a clock face?',picture:'🕐',options:['Square','Circle','Triangle','Rectangle'],answer:'Circle',hint:'Round and tells the time!',level:1},
+    {q:'What shape is a book?',speech:'What shape is a book?',picture:'📚',options:['Circle','Triangle','Rectangle','Star'],answer:'Rectangle',hint:'Two long sides, two short sides!',level:1},
+    // Extra Level 2
+    {q:'What is the weather like in winter?',speech:'What is the weather usually like in winter?',picture:'🌨️',options:['Hot and sunny','Warm and rainy','Cold and snowy','Dry and windy'],answer:'Cold and snowy',hint:'Wrap up warm!',level:2},
+    {q:'Which season comes after summer?',speech:'Which season comes after summer?',picture:'🍂',options:['Spring','Winter','Autumn','Summer'],answer:'Autumn',hint:'Leaves start to fall!',level:2},
+    {q:'What do we call rain that freezes?',speech:'What do we call rain that freezes into tiny balls?',picture:'🌧️❄️',options:['Snow','Frost','Hail','Sleet'],answer:'Hail',hint:'It bounces off the ground!',level:2},
+    // Extra Level 3
+    {q:'What is the opposite of fast?',speech:'What is the opposite of fast?',picture:'🐢',options:['Quick','Slow','Loud','Small'],answer:'Slow',hint:'Like a tortoise!',level:3},
+    {q:'What is the opposite of up?',speech:'What is the opposite of up?',picture:'⬆️⬇️',options:['High','Across','Down','Sideways'],answer:'Down',hint:'The floor is...',level:3},
+    {q:'How many days in a week?',speech:'How many days are there in a week?',picture:'📅',options:['5','6','7','8'],answer:'7',hint:'Monday through Sunday!',level:3},
+    {q:'What is the opposite of empty?',speech:'What is the opposite of empty?',picture:'🪣',options:['Clean','Full','Small','Open'],answer:'Full',hint:'Fill it up!',level:3},
+  ],
+};
+
+const bonusQuestions = [
+  // Unicorn & princess
+  {q:'What colour is a rainbow?',speech:'What colour is a rainbow?',picture:'🌈',options:['Grey','Many colours','Just blue','Just red'],answer:'Many colours',hint:'Look up after rain!'},
+  {q:'How many legs does a unicorn have?',speech:'How many legs does a unicorn have?',picture:'🦄',options:['2','3','4','6'],answer:'4',hint:'Count like a horse!'},
+  {q:'What is on a unicorn\'s head?',speech:'What is on a unicorn head?',picture:'🦄✨',options:['A hat','A horn','A bow','A crown'],answer:'A horn',hint:'Something pointy and magical!'},
+  {q:'Which princess has glass slippers?',speech:'Which princess has glass slippers?',picture:'👠✨',options:['Rapunzel','Moana','Cinderella','Tiana'],answer:'Cinderella',hint:'She goes to the ball!'},
+  {q:'What is at the end of a rainbow?',speech:'What is at the end of a rainbow?',picture:'🌈🪄',options:['A cloud','A pot of gold','A star','A dragon'],answer:'A pot of gold',hint:'Something very precious!'},
+  {q:'Which princess has long magic hair?',speech:'Which princess has long magic hair?',picture:'💇‍♀️✨',options:['Cinderella','Elsa','Rapunzel','Moana'],answer:'Rapunzel',hint:'She lives in a tower!'},
+  {q:'Which princess can make ice and snow?',speech:'Which princess can make ice and snow?',picture:'❄️👸',options:['Moana','Belle','Cinderella','Elsa'],answer:'Elsa',hint:'Let it go!'},
+  {q:'What colour is a unicorn\'s horn?',speech:'What colour is a unicorn\'s horn usually shown?',picture:'🦄',options:['Brown','Black','Gold','White'],answer:'Gold',hint:'Shiny and magical!'},
+  // Animal sounds
+  {q:'What sound does a dog make?',speech:'What sound does a dog make?',picture:'🐶',options:['Moo','Woof','Oink','Meow'],answer:'Woof',hint:'Dogs love to bark!'},
+  {q:'What sound does a cat make?',speech:'What sound does a cat make?',picture:'🐱',options:['Woof','Baa','Meow','Roar'],answer:'Meow',hint:'Listen to a kitty!'},
+  {q:'What sound does a cow make?',speech:'What sound does a cow make?',picture:'🐄',options:['Moo','Cluck','Hiss','Neigh'],answer:'Moo',hint:'Cows say this on the farm!'},
+  {q:'What sound does a duck make?',speech:'What sound does a duck make?',picture:'🦆',options:['Woof','Quack','Tweet','Roar'],answer:'Quack',hint:'Ducks love to splash!'},
+  {q:'What sound does a sheep make?',speech:'What sound does a sheep make?',picture:'🐑',options:['Moo','Oink','Baa','Cluck'],answer:'Baa',hint:'Fluffy white sheep!'},
+  {q:'What sound does a pig make?',speech:'What sound does a pig make?',picture:'🐷',options:['Baa','Oink','Quack','Neigh'],answer:'Oink',hint:'Pigs love to roll in mud!'},
+  {q:'What sound does a horse make?',speech:'What sound does a horse make?',picture:'🐴',options:['Moo','Roar','Neigh','Woof'],answer:'Neigh',hint:'Horses gallop fast!'},
+  {q:'What sound does a frog make?',speech:'What sound does a frog make?',picture:'🐸',options:['Tweet','Ribbit','Quack','Hiss'],answer:'Ribbit',hint:'Frogs love to jump!'},
+  {q:'What sound does a bird make?',speech:'What sound does a bird make?',picture:'🐦',options:['Oink','Moo','Tweet','Bark'],answer:'Tweet',hint:'Birds sing in the trees!'},
+  {q:'What sound does a snake make?',speech:'What sound does a snake make?',picture:'🐍',options:['Roar','Hiss','Quack','Baa'],answer:'Hiss',hint:'Snakes are very sneaky!'},
+  {q:'What sound does a lion make?',speech:'What sound does a lion make?',picture:'🦁',options:['Moo','Roar','Oink','Quack'],answer:'Roar',hint:"It's very loud and fierce!"},
+  {q:'What sound does an elephant make?',speech:'What sound does an elephant make?',picture:'🐘',options:['Roar','Trumpet','Moo','Hiss'],answer:'Trumpet',hint:'Through its long trunk!'},
+  // Nature & world
+  {q:'What do bees make?',speech:'What do bees make?',picture:'🐝🍯',options:['Milk','Honey','Juice','Jam'],answer:'Honey',hint:"It's sweet and golden!"},
+  {q:'What colour is the sky?',speech:'What colour is the sky on a sunny day?',picture:'☀️🌤️',options:['Green','Pink','Blue','Orange'],answer:'Blue',hint:'Look up on a nice day!'},
+  {q:'How many fingers on one hand?',speech:'How many fingers on one hand?',picture:'✋',options:['3','4','5','6'],answer:'5',hint:'Count your fingers!'},
+  {q:'What is a baby cat called?',speech:'What is a baby cat called?',picture:'🐱💕',options:['Puppy','Kitten','Cub','Foal'],answer:'Kitten',hint:'Very tiny and fluffy!'},
+  {q:'What is a baby dog called?',speech:'What is a baby dog called?',picture:'🐶💕',options:['Kitten','Foal','Puppy','Cub'],answer:'Puppy',hint:'Very bouncy and playful!'},
+  {q:'What falls from clouds?',speech:'What falls from clouds?',picture:'🌧️',options:['Snow only','Rain','Sunshine','Stars'],answer:'Rain',hint:'It makes puddles!'},
+  {q:'What do caterpillars turn into?',speech:'What do caterpillars turn into?',picture:'🐛✨',options:['Bees','Butterflies','Moths','Worms'],answer:'Butterflies',hint:'Beautiful wings!'},
+  {q:'What colour is grass?',speech:'What colour is grass?',picture:'🌿',options:['Blue','Yellow','Green','Red'],answer:'Green',hint:'Look outside!'},
+  {q:'What colour is a banana?',speech:'What colour is a banana?',picture:'🍌',options:['Red','Blue','Green','Yellow'],answer:'Yellow',hint:'Monkeys love them!'},
+  {q:'How many toes on one foot?',speech:'How many toes on one foot?',picture:'🦶',options:['3','4','5','6'],answer:'5',hint:'Count your toes!'},
+  {q:'What shape is the sun?',speech:'What shape is the sun?',picture:'☀️',options:['Square','Triangle','Circle','Star'],answer:'Circle',hint:'Round and bright!'},
+  {q:'What do fish live in?',speech:'What do fish live in?',picture:'🐟',options:['Trees','Water','Sand','Clouds'],answer:'Water',hint:'They swim in it!'},
+  {q:'What do birds use to fly?',speech:'What do birds use to fly?',picture:'🐦',options:['Legs','Fins','Wings','Tails'],answer:'Wings',hint:'They flap them!'},
+  {q:'What is the biggest animal on land?',speech:'What is the biggest animal on land?',picture:'🐘',options:['Lion','Giraffe','Elephant','Hippo'],answer:'Elephant',hint:'It has a long trunk!'},
+];
+
+const disneyPrincesses = [
+  {emoji:'👸',name:'Cinderella'},
+  {emoji:'🧜',name:'Ariel'},
+  {emoji:'🌹',name:'Belle'},
+  {emoji:'🌺',name:'Moana'},
+  {emoji:'❄️',name:'Elsa'},
+  {emoji:'🌙',name:'Jasmine'},
+  {emoji:'🌿',name:'Tiana'},
+  {emoji:'💜',name:'Rapunzel'},
+];
+
+const allPalaceMilestones = {
+  disney: [
+    {title:'The Garden Begins!',    msg:'Beautiful gardens surround your Disney Palace!'},
+    {title:'Flowers Bloom!',        msg:'Pretty pink flowers are blooming everywhere!'},
+    {title:'First Stones!',         msg:'The shimmering palace walls are being built!'},
+    {title:'Rising Up!',            msg:'Your Disney Palace is growing taller!'},
+    {title:'The Palace Appears!',   msg:"Wow! It looks just like Cinderella's!"},
+    {title:'A Grand Door!',         msg:'Every princess enters through this magical door!'},
+    {title:'Sparkling Windows!',    msg:'The windows catch all the magic light!'},
+    {title:'The Tallest Tower!',    msg:'You can see the whole kingdom from up here!'},
+    {title:'Pure Magic!',           msg:'Fairy dust fills every room of the palace!'},
+    {title:'A Royal Crown!',        msg:'A crown fit for a Disney Princess!'},
+    {title:'PALACE COMPLETE!',      msg:'Your Disney Palace is the most magical place in the whole kingdom!'},
+  ],
+  ocean: [
+    {title:'The Sea Floor Glows!',  msg:'The magical ocean floor is ready for your kingdom!'},
+    {title:'Sea Flowers Bloom!',    msg:'Beautiful shells and sea flowers decorate your kingdom!'},
+    {title:'Coral Walls Rise!',     msg:'Glowing coral walls shimmer in every colour!'},
+    {title:'Pearl Towers!',         msg:'Two tall towers of pearl rise from the seabed!'},
+    {title:'The Ocean Palace!',     msg:'The dolphins came to admire your beautiful palace!'},
+    {title:'Seaweed Doors!',        msg:'A grand entrance made from enchanted seaweed!'},
+    {title:'Bubble Windows!',       msg:'Tiny crabs peek through your sparkly bubble windows!'},
+    {title:'The Highest Tower!',    msg:'You can see the whole ocean from the top!'},
+    {title:'Mermaid Magic!',        msg:'A mermaid sprinkled stardust through every room!'},
+    {title:'Sea Star Crown!',       msg:'A golden sea-star crown glitters at the top!'},
+    {title:'OCEAN KINGDOM COMPLETE!', msg:'The most magical underwater kingdom in the whole sea!'},
+  ],
+  forest: [
+    {title:'The Clearing Glows!',   msg:'Fireflies light up the perfect spot in the enchanted forest!'},
+    {title:'Magic Flowers!',        msg:'Glowing mushrooms and wildflowers bloom all around!'},
+    {title:'Tree Walls!',           msg:'Ancient trees weave their branches into golden walls!'},
+    {title:'Vine Towers!',          msg:'Two towers of twisted vines grow up to the sky!'},
+    {title:'The Forest Palace!',    msg:'Fireflies dance around the walls of your magical home!'},
+    {title:'Mushroom Door!',        msg:'A friendly bluebird sits on your magical mushroom door!'},
+    {title:'Dewdrop Windows!',      msg:'Morning dew makes rainbow patterns on your floor!'},
+    {title:'The Tallest Tree!',     msg:'You can see all the enchanted forest from the top!'},
+    {title:'Fairy Magic!',          msg:'A fairy left golden sparkle trails through every room!'},
+    {title:'Flower Crown!',         msg:'A crown of flowers and stars sits at the very top!'},
+    {title:'FOREST PALACE COMPLETE!', msg:'The most magical home in the whole enchanted forest!'},
+  ],
+  space: [
+    {title:'A New World!',          msg:'You found the perfect spot among the stars!'},
+    {title:'Space Flowers!',        msg:'Strange glowing space flowers light up the dark!'},
+    {title:'Meteor Walls!',         msg:'Gleaming silver walls rise from the stardust!'},
+    {title:'Rocket Towers!',        msg:'Two rocket towers blast upward into the night sky!'},
+    {title:'The Space Palace!',     msg:'No other kingdom has ever reached this high!'},
+    {title:'Shooting Star Door!',   msg:'A shooting star carved your grand entrance!'},
+    {title:'Galaxy Windows!',       msg:'Every window shows a different swirling nebula!'},
+    {title:'Edge of the Milky Way!',msg:'The tallest tower touches the edge of the galaxy!'},
+    {title:'Moondust Magic!',       msg:'A friendly alien filled every room with moondust!'},
+    {title:'Comet Crown!',          msg:'A crown of captured comet shines forever at the top!'},
+    {title:'SPACE CASTLE COMPLETE!',msg:'The most amazing castle in the entire universe!'},
+  ],
+};
+
+function getPalaceMilestone(idx){
+  const milestones = allPalaceMilestones[currentTheme] || allPalaceMilestones.disney;
+  return milestones[Math.min(idx, milestones.length-1)];
+}
+
+const palacePieces = ['','p-garden','p-wall','p-towers','p-keep','p-door','p-windows','p-spire','p-magic','p-crown','p-fireworks'];
+const palaceStageCount = palacePieces.length - 1;
+
+const correctMsgs = ['Wonderful!','Amazing!','So clever!','Brilliant!','Magical!','Superstar!','Incredible!','Perfect!','You did it!','Fantastic!'];
+const wrongMsgs   = ['Almost! Try again soon','Not quite, you\'ve got this!','Keep going, you\'re learning!','Good try!'];
+const burstList   = ['⭐','🌟','✨','💫','🌸','🦄','👑','🎉','🌈','💕','🎊','🏆'];
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let currentCategory='letters', currentQ=null;
+let score=0, streak=0, correctCount=0, palaceLevel=0;
+let answered=false, isBonus=false;
+let qSinceBonus=0, nextBonusIn=4+Math.floor(Math.random()*3);
+let unicornsTotal=0, princesses=[];
+let usedBonus=[], usedQ={};
+categories.forEach(c=>usedQ[c.id]=[]);
+let celebQ=[], celebActive=false;
+let lastDifficulty=1; // track level-ups
+
+// Difficulty per category — based on correct answers in THAT subject
+function getDifficulty(catId){
+  const p = loadProgress();
+  const cor = (p.catCorrect || {})[catId || currentCategory] || 0;
+  if(cor < 8)  return 1;
+  if(cor < 20) return 2;
+  return 3;
+}
+
+// Global level for display/level-up fanfare = average across all cats
+function getGlobalLevel(){
+  const p = loadProgress();
+  const total = Object.values(p.catCorrect || {}).reduce((a,b)=>a+b,0);
+  if(total < 15) return 1;
+  if(total < 50) return 2;
+  return 3;
+}
+
+function checkLevelUp(){
+  const newDiff = getGlobalLevel();
+  if(newDiff > lastDifficulty){
+    lastDifficulty = newDiff;
+    const levelNames = {2:'Explorer', 3:'Star'};
+    const levelEmojis = {2:'⭐⭐', 3:'⭐⭐⭐'};
+    playLevelUp();
+    queueCeleb(
+      levelEmojis[newDiff],
+      'Level Up! You\'re an ' + levelNames[newDiff] + '!',
+      newDiff===2
+        ? 'Wow! New harder questions unlocked in every subject! You\'re amazing!'
+        : 'Incredible! You\'ve reached the top level! You\'re a superstar learner!'
+    );
+    setTimeout(()=>speakText('Level up! Amazing! You are now an ' + levelNames[newDiff] + '!'), 300);
+  }
+}
+
+const categorySpeeches = {
+  letters: 'Letters! Can you name the letters?',
+  words:   'Words! Can you read the words?',
+  reading: 'Reading! Listen carefully!',
+  rhymes:  'Rhymes! Let\'s find words that rhyme!',
+  count:   'Counting! How many can you count?',
+  math:    'Maths! Let\'s do some sums!',
+  colours: 'Colours! Do you know your colours?',
+  animals: 'Animals! Let\'s learn about animals!',
+  world:   'The World! Let\'s explore!',
+};
+
+// ─────────────────────────────────────────────
+// MINI STORIES  (shown on palace unlock)
+// ─────────────────────────────────────────────
+const palaceStories = {
+  disney: [
+    {pic:'🌱', text:'Once upon a time, a little princess planted a magical seed in the royal garden...'},
+    {pic:'🌸', text:'Beautiful flowers bloomed overnight! The whole kingdom smelled wonderful!'},
+    {pic:'🧱', text:'Brave builders arrived with shimmering purple stones to build the palace walls!'},
+    {pic:'🗼', text:'Two tall towers rose up to touch the clouds. A flag waved at the very top!'},
+    {pic:'🏰', text:'The palace walls gleamed in the sunlight — it looked just like Cinderella\'s home!'},
+    {pic:'🚪', text:'A grand arched door appeared, decorated with golden swirls and a tiny jewel handle!'},
+    {pic:'🪟', text:'Sparkling blue windows reflected the stars at night — each one told a story!'},
+    {pic:'🗽', text:'The tallest tower reached so high you could see the whole magical kingdom from the top!'},
+    {pic:'✨', text:'Fairy dust drifted through every room, making everything glow with pure magic!'},
+    {pic:'👑', text:'A golden crown was placed on the highest spire — fit for the most royal of princesses!'},
+    {pic:'🎆', text:'BOOM! Fireworks filled the sky as the palace was finally complete! The whole kingdom cheered!'},
+  ],
+  ocean: [
+    {pic:'🌊', text:'Deep below the waves, a little mermaid found the perfect spot to build her kingdom...'},
+    {pic:'🐚', text:'Thousands of pink shells and sea flowers decorated the ocean floor beautifully!'},
+    {pic:'🪸', text:'Glowing coral walls rose from the seabed, shimmering in every colour of the rainbow!'},
+    {pic:'🐠', text:'Two tall towers of pearl appeared, with friendly fish swimming all around them!'},
+    {pic:'🏰', text:'The ocean palace shimmered with light — even the dolphins came to admire it!'},
+    {pic:'🐡', text:'A grand arched door of woven seaweed opened to reveal a magical underwater hall!'},
+    {pic:'💙', text:'Bubble windows let in the soft blue light from above. Tiny crabs peeked through!'},
+    {pic:'🌊', text:'The highest tower touched the surface of the sea — you could see the whole ocean!'},
+    {pic:'🧜', text:'A mermaid swam through and sprinkled magic stardust through every room!'},
+    {pic:'⭐', text:'A golden sea-star crown was placed on top — the ocean kingdom was almost complete!'},
+    {pic:'🎆', text:'A fountain of bubbles burst into the sea like underwater fireworks — the kingdom was done!'},
+  ],
+  forest: [
+    {pic:'🌿', text:'Deep in an enchanted forest, a tiny fairy decided to build the most magical home ever...'},
+    {pic:'🌺', text:'Colourful wildflowers and glowing mushrooms sprouted all around the chosen spot!'},
+    {pic:'🌳', text:'Ancient trees wove their branches together to form strong and beautiful golden walls!'},
+    {pic:'🦉', text:'Two towers of twisted vines grew up, with owls hooting a welcome from the branches!'},
+    {pic:'🏡', text:'The forest palace glowed with warm green light — fireflies danced around its walls!'},
+    {pic:'🍄', text:'A door made of giant mushrooms appeared, with a tiny bluebird perched on top!'},
+    {pic:'🔮', text:'Leaf-shaped windows caught the morning dew, making rainbow patterns on the floor inside!'},
+    {pic:'🌲', text:'The tallest tree tower swayed gently in the breeze — you could see all the forest from it!'},
+    {pic:'🧚', text:'A friendly fairy flew through every room, leaving trails of golden sparkles behind!'},
+    {pic:'🌟', text:'A crown of intertwined flowers and stars was placed at the very top of the palace!'},
+    {pic:'🎆', text:'The whole forest lit up with fireflies and fairy lights — the enchanted palace was complete!'},
+  ],
+  space: [
+    {pic:'🚀', text:'Far, far away in a galaxy full of twinkling stars, a brave astronaut found a new world...'},
+    {pic:'🌸', text:'Strange glowing space flowers bloomed on the alien ground, lighting up the dark!'},
+    {pic:'🌌', text:'Gleaming meteor walls rose from the stardust, smooth and silver like the moon!'},
+    {pic:'🛸', text:'Two rocket towers launched upward, their lights blinking red and gold in the dark sky!'},
+    {pic:'🏰', text:'The space palace floated among the stars — no other kingdom had ever reached this high!'},
+    {pic:'🌠', text:'A shooting star carved out the grand entrance, leaving a trail of cosmic sparkles!'},
+    {pic:'🔭', text:'Galaxy windows showed views of swirling nebulas — a different universe in each one!'},
+    {pic:'🛰️', text:'The tallest tower reached all the way to the edge of the Milky Way itself!'},
+    {pic:'👽', text:'A friendly little alien visited and filled every room with magical moondust!'},
+    {pic:'🌟', text:'A crown made from a captured comet was placed at the very top — shining forever!'},
+    {pic:'🎆', text:'Supernovas exploded in every colour across the sky — the space castle was finally complete!'},
+  ],
+};
+
+let currentTheme = 'disney';
+
+function getStoryForStage(stage){
+  const stories = palaceStories[currentTheme] || palaceStories.disney;
+  return stories[Math.min(stage, stories.length-1)];
+}
+
+function showStory(stage){
+  const s = getStoryForStage(stage);
+  if(!s) return;
+  const panel = document.getElementById('storyPanel');
+  document.getElementById('storyPic').textContent = s.pic;
+  document.getElementById('storyText').textContent = s.text;
+  panel.className = 'story-panel show';
+  setTimeout(()=>speakText(s.text), 400);
+}
+
+function hideStory(){
+  document.getElementById('storyPanel').className = 'story-panel';
+}
+
+// ─────────────────────────────────────────────
+// THEME PICKER
+// ─────────────────────────────────────────────
+const themeLabels = {
+  disney: {name:'Disney Palace', bg:'#fdf4ff', accent:'#9333ea', palaceLabel:'✨ Your Disney Palace ✨'},
+  ocean:  {name:'Ocean Kingdom',  bg:'#f0f9ff', accent:'#0284c7', palaceLabel:'🌊 Your Ocean Kingdom 🧜'},
+  forest: {name:'Enchanted Forest',bg:'#f0fdf4',accent:'#16a34a', palaceLabel:'🧚 Your Forest Palace 🌿'},
+  space:  {name:'Space Castle',   bg:'#0f0f1a', accent:'#7c3aed', palaceLabel:'🚀 Your Space Castle 🌌'},
+};
+
+function openThemePicker(){
+  // mark current selection
+  Object.keys(themeLabels).forEach(t=>{
+    const c = document.getElementById('theme-'+t);
+    if(c) c.className = 'theme-card' + (t===currentTheme?' selected':'');
+  });
+  document.getElementById('themePicker').className = 'theme-picker show';
+}
+
+function closeThemePicker(){
+  document.getElementById('themePicker').className = 'theme-picker';
+}
+
+function selectTheme(t){
+  currentTheme = t;
+  try{ localStorage.setItem('aStarTheme', t); }catch(e){}
+  const lbl = document.getElementById('palaceLabel');
+  if(lbl) lbl.textContent = themeLabels[t].palaceLabel;
+  Object.keys(themeLabels).forEach(k=>{
+    const c = document.getElementById('theme-'+k);
+    if(c) c.className = 'theme-card'+(k===t?' selected':'');
+  });
+  speakText('You chose the ' + themeLabels[t].name + '! Keep building!');
+}
+
+// ─────────────────────────────────────────────
+// LEARNING PASSPORT
+// ─────────────────────────────────────────────
+const passportDefs = {
+  letters: {icon:'🔤', name:'Letters',     goal:10, speech:'Letters explorer!'},
+  words:   {icon:'💬', name:'Words',       goal:10, speech:'Word wizard!'},
+  reading: {icon:'📚', name:'Reading',     goal:10, speech:'Reading champion!'},
+  rhymes:  {icon:'🎵', name:'Rhymes',      goal:10, speech:'Rhyme master!'},
+  count:   {icon:'🔢', name:'Counting',    goal:10, speech:'Counting star!'},
+  math:    {icon:'➕', name:'Maths',       goal:10, speech:'Maths genius!'},
+  colours: {icon:'🎨', name:'Colours',     goal:10, speech:'Colour expert!'},
+  animals: {icon:'🐾', name:'Animals',     goal:10, speech:'Animal expert!'},
+  world:   {icon:'🌍', name:'World',       goal:10, speech:'World explorer!'},
+};
+
+function openPassport(){
+  renderPassport();
+  document.getElementById('passportScreen').className = 'passport show';
+  speakText('My Learning Passport! Stamp each subject by answering ten questions correctly!');
+}
+
+function closePassport(){
+  document.getElementById('passportScreen').className = 'passport';
+}
+
+function renderPassport(){
+  const p = loadProgress();
+  const grid = document.getElementById('passportGrid');
+  grid.innerHTML = '';
+  categories.forEach(cat=>{
+    const def = passportDefs[cat.id];
+    if(!def) return;
+    const cor = (p.catCorrect || {})[cat.id] || 0;
+    const pct = Math.min(100, Math.round((cor / def.goal) * 100));
+    const complete = cor >= def.goal;
+    const unlocked = cor > 0;
+    const card = document.createElement('div');
+    card.className = 'passport-stamp' + (complete?' complete':unlocked?' unlocked':'');
+    card.innerHTML = `
+      <span class="stamp-icon">${def.icon}</span>
+      <div class="stamp-name">${def.name}</div>
+      <div class="stamp-progress">${Math.min(cor, def.goal)} / ${def.goal}</div>
+      <div class="stamp-bar-wrap"><div class="stamp-bar-fill" style="width:0%" data-pct="${pct}"></div></div>
+      <span class="stamp-seal">✅</span>`;
+    grid.appendChild(card);
+  });
+  // animate bars
+  setTimeout(()=>{
+    grid.querySelectorAll('.stamp-bar-fill').forEach(b=>{
+      b.style.width = b.dataset.pct + '%';
+    });
+  }, 150);
+
+  // Check for newly completed stamps and celebrate
+  categories.forEach(cat=>{
+    const def = passportDefs[cat.id];
+    if(!def) return;
+    const cor = (p.catCorrect || {})[cat.id] || 0;
+    const prev = (p.passportCelebrated || {})[cat.id] || false;
+    if(cor >= def.goal && !prev){
+      // mark celebrated
+      p.passportCelebrated = p.passportCelebrated || {};
+      p.passportCelebrated[cat.id] = true;
+      saveProgress(p);
+      setTimeout(()=>{
+        queueCeleb('🗺️', 'Passport Stamp!', 'You stamped ' + def.name + '! ' + def.speech);
+        speakText('Passport stamp! ' + def.speech);
+      }, 500);
+    }
+  });
+}
+function init(){
+  // restore saved theme
+  try{
+    const saved = localStorage.getItem('aStarTheme');
+    if(saved && themeLabels[saved]){
+      currentTheme = saved;
+      const lbl = document.getElementById('palaceLabel');
+      if(lbl) lbl.textContent = themeLabels[saved].palaceLabel;
+      Object.keys(themeLabels).forEach(k=>{
+        const c = document.getElementById('theme-'+k);
+        if(c) c.className = 'theme-card'+(k===saved?' selected':'');
+      });
+    }
+  }catch(e){}
+  // restore lastDifficulty from saved progress
+  lastDifficulty = getGlobalLevel();
+  buildStars(); buildTabs(); buildPalaceProgress(); renderPalaceSVG(); renderUnicornBar(); updateStreakDisplay(); loadQuestion();
+}
+
+function buildStars(){
+  const c=document.getElementById('stars'), em=['✨','⭐','🌟','💫','🌸'];
+  for(let i=0;i<14;i++){
+    const s=document.createElement('div'); s.className='star';
+    s.textContent=em[Math.floor(Math.random()*em.length)];
+    s.style.left=Math.random()*100+'%';
+    s.style.animationDuration=(8+Math.random()*12)+'s';
+    s.style.animationDelay=(Math.random()*15)+'s';
+    s.style.fontSize=(0.8+Math.random()*1.2)+'rem';
+    c.appendChild(s);
+  }
+}
+
+function getBadge(catId){
+  const p = loadProgress();
+  const cor = (p.catCorrect || {})[catId] || 0;
+  const tot = (p.catTotal  || {})[catId] || 0;
+  const acc = tot > 0 ? cor/tot : 0;
+  if(cor >= 10 && acc >= 0.9) return {text:'🥇', cls:'gold',    tip:'Gold — 90%+ accuracy!'};
+  if(cor >= 10 && acc >= 0.75)return {text:'🥈', cls:'silver',  tip:'Silver — 75%+ accuracy!'};
+  if(cor >= 10)                return {text:'🥉', cls:'platinum',tip:'Bronze — 10+ correct!'};
+  return null;
+}
+
+const categoryDefs = {
+  letters: {emoji:'🔤', short:'Letters'},
+  words:   {emoji:'💬', short:'Words'},
+  reading: {emoji:'📚', short:'Reading'},
+  rhymes:  {emoji:'🎵', short:'Rhymes'},
+  count:   {emoji:'🔢', short:'Count'},
+  math:    {emoji:'➕', short:'Maths'},
+  colours: {emoji:'🎨', short:'Colours'},
+  animals: {emoji:'🐾', short:'Animals'},
+  world:   {emoji:'🌍', short:'World'},
+};
+
+function buildTabs(){
+  const c=document.getElementById('tabs');
+  c.innerHTML='';
+  categories.forEach(cat=>{
+    const def = categoryDefs[cat.id] || {emoji:'⭐', short:cat.id};
+    const b=document.createElement('button');
+    b.id='tab-'+cat.id;
+    b.className='tab'+(cat.id===currentCategory?' active':'');
+    b.innerHTML=`<span style="font-size:1.5rem;line-height:1">${def.emoji}</span><span class="tab-cat-label">${def.short}</span>`;
+    b.onclick=()=>switchCat(cat.id);
+    const badge = getBadge(cat.id);
+    if(badge){
+      const span=document.createElement('span');
+      span.className='tab-badge '+badge.cls;
+      span.textContent=badge.text;
+      b.appendChild(span);
+    }
+    c.appendChild(b);
+  });
+}
+
+function refreshTabBadges(){
+  categories.forEach(cat=>{
+    const btn = document.getElementById('tab-'+cat.id);
+    if(!btn) return;
+    const old = btn.querySelector('.tab-badge');
+    if(old) old.remove();
+    const badge = getBadge(cat.id);
+    if(badge){
+      const span=document.createElement('span');
+      span.className='tab-badge '+badge.cls;
+      span.textContent=badge.text;
+      btn.appendChild(span);
+    }
+  });
+}
+
+let palaceCollapsed = true;
+function togglePalace(){
+  palaceCollapsed = !palaceCollapsed;
+  const content = document.getElementById('palaceContent');
+  const arrow = document.getElementById('palaceArrow');
+  if(palaceCollapsed){
+    content.className='palace-content collapsed';
+    arrow.className='palace-toggle-arrow closed';
+  } else {
+    content.className='palace-content';
+    arrow.className='palace-toggle-arrow';
+  }
+}
+
+function updateToggleGems(){
+  const el = document.getElementById('palaceToggleGems');
+  if(!el) return;
+  const filled = Math.min(palaceLevel, palaceStageCount);
+  el.textContent = '🏰'.repeat(Math.min(filled,3)) + (filled>3?'+':'');
+}
+
+function updateStreakDisplay(){
+  const el = document.getElementById('streakDisplay');
+  if(!el) return;
+  if(streak === 0){ el.textContent = '—'; return; }
+  // show up to 5 flames then number
+  const flames = Math.min(streak, 5);
+  el.textContent = '🔥'.repeat(flames) + (streak > 5 ? ' ×'+streak : '');
+}
+
+function buildPalaceProgress(){
+  const c=document.getElementById('palaceProgress'); c.innerHTML='';
+  for(let i=0;i<palaceStageCount;i++){
+    const g=document.createElement('div');
+    g.className='progress-gem'+(i<palaceLevel?' filled':'');
+    c.appendChild(g);
+  }
+  updateToggleGems();
+}
+
+function renderPalaceSVG(){
+  // Reveal pieces up to current level
+  for(let i=1;i<=palaceStageCount;i++){
+    const el=document.getElementById(palacePieces[i]);
+    if(!el) continue;
+    if(i<=palaceLevel){
+      el.classList.remove('hidden');
+    } else {
+      el.classList.add('hidden');
+    }
+  }
+}
+
+function renderUnicornBar(){
+  const bar=document.getElementById('unicornBar');
+  const inBatch=unicornsTotal%5;
+  if(unicornsTotal===0){
+    bar.innerHTML='<span style="color:#c084fc;font-size:0.8rem;font-weight:700;">Answer bonus questions to win unicorns!</span>';
+    return;
+  }
+  bar.innerHTML='';
+  for(let i=0;i<5;i++){
+    const s=document.createElement('span');
+    s.className='unicorn-slot'+(i<inBatch?' earned':'');
+    s.textContent=i<inBatch?'🦄':'🔘';
+    s.style.opacity=i<inBatch?'1':'0.25';
+    bar.appendChild(s);
+  }
+  const lbl=document.createElement('span');
+  lbl.style.cssText='font-family:Fredoka One,cursive;font-size:0.78rem;color:#7e22ce;margin-left:6px;';
+  lbl.textContent=inBatch+'/5';
+  bar.appendChild(lbl);
+}
+
+function switchCat(id){
+  currentCategory=id;
+  categories.forEach(cat=>{
+    const t=document.getElementById('tab-'+cat.id);
+    if(t) t.className='tab'+(cat.id===id?' active':'');
+  });
+  isBonus=false;
+  hideStory();
+  document.getElementById('bonusBanner').className='bonus-banner';
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('questionHint').textContent='';
+  document.getElementById('nextBtn').className='next-btn';
+  speakText(categorySpeeches[id] || id);
+  loadQuestion();
+}
+
+// ─────────────────────────────────────────────
+// QUESTION LOGIC
+// ─────────────────────────────────────────────
+function loadQuestion(){
+  qSinceBonus++; isBonus=false;
+  document.getElementById('bonusBanner').className='bonus-banner';
+
+  if(qSinceBonus>=nextBonusIn){
+    qSinceBonus=0; nextBonusIn=4+Math.floor(Math.random()*3);
+    loadBonusQ(); return;
+  }
+
+  const pool = questions[currentCategory];
+  const diff = getDifficulty(currentCategory);
+
+  // Update level badge in score bar
+  const lvl = getGlobalLevel();
+  const lvlEl = document.getElementById('levelDisplay');
+  if(lvlEl) lvlEl.textContent = lvl;
+
+  // Build a pool filtered to appropriate level(s)
+  // At level 1: only level 1 questions
+  // At level 2: level 1 and 2 questions
+  // At level 3: all questions, but bias toward level 2+3
+  let levelPool = pool.filter(q => !q.level || q.level <= diff);
+  if(!levelPool.length) levelPool = pool; // fallback
+
+  let avail = levelPool.filter(q => {
+    const i = pool.indexOf(q);
+    return !usedQ[currentCategory].includes(i);
+  });
+  if(!avail.length){ usedQ[currentCategory]=[]; avail=levelPool; }
+
+  const chosen = avail[Math.floor(Math.random()*avail.length)];
+  const idx = pool.indexOf(chosen);
+  usedQ[currentCategory].push(idx);
+  currentQ = pool[idx];
+  renderQ(false);
+}
+
+function loadBonusQ(){
+  isBonus=true;
+  document.getElementById('bonusBanner').className='bonus-banner show';
+  let avail=bonusQuestions.filter((_,i)=>!usedBonus.includes(i));
+  if(!avail.length){usedBonus=[]; avail=bonusQuestions;}
+  const idx=bonusQuestions.indexOf(avail[Math.floor(Math.random()*avail.length)]);
+  usedBonus.push(idx);
+  currentQ=bonusQuestions[idx];
+  playBonus();
+  renderQ(true);
+  setTimeout(()=>speakText('Bonus question! '+currentQ.speech),700);
+}
+
+function renderQ(bonus){
+  const pic=document.getElementById('questionPicture');
+  const txt=document.getElementById('questionText');
+  const hint=document.getElementById('questionHint');
+  const grid=document.getElementById('optionsGrid');
+  const card=document.getElementById('questionCard');
+
+  card.style.boxShadow=bonus
+    ?'0 8px 28px rgba(251,191,36,0.4),0 0 0 3px #fef3c7'
+    :'0 8px 28px rgba(147,51,234,0.13),0 0 0 3px #f3e8ff';
+
+  if(currentQ.display && currentCategory !== 'letters'){
+    pic.innerHTML='<span class="big-letter">'+currentQ.display+'</span>';
+  } else {
+    pic.textContent=currentQ.picture;
+  }
+
+  txt.textContent=currentQ.q;
+  hint.textContent=''; // Hide hint until wrong answer — set via showHint()
+  hint.dataset.hint = currentQ.hint ? (bonus?'🦄 ':'💡 ')+currentQ.hint : '';
+
+  // Show difficulty badge
+  const diff = getDifficulty(currentCategory);
+  const diffLabels = {1:'⭐ Starter', 2:'⭐⭐ Explorer', 3:'⭐⭐⭐ Star!'};
+  let badge = document.getElementById('diffBadge');
+  if(!badge){
+    badge = document.createElement('div');
+    badge.id = 'diffBadge';
+    badge.style.cssText = 'font-size:0.7rem;font-weight:900;color:#a855f7;margin-bottom:6px;letter-spacing:0.5px;';
+    txt.parentNode.insertBefore(badge, txt.nextSibling);
+  }
+  badge.textContent = bonus ? '🌟 Bonus Round!' : diffLabels[diff];
+  currentSpeech=currentQ.speech||currentQ.q;
+
+  grid.innerHTML=''; grid.className='options-grid';
+  const shuffled=[...currentQ.options].sort(()=>Math.random()-0.5);
+  shuffled.forEach(opt=>{
+    const btn=document.createElement('button');
+    btn.className='option-btn';
+    if(bonus) btn.style.borderColor='#fbbf24';
+    if(currentQ.optPics){
+      const origIdx=currentQ.options.indexOf(opt);
+      if(origIdx>=0&&currentQ.optPics[origIdx]){
+        const p=document.createElement('span'); p.className='opt-pic';
+        p.textContent=currentQ.optPics[origIdx]; btn.appendChild(p);
+      }
+    }
+    const lbl=document.createElement('span'); lbl.textContent=opt; btn.appendChild(lbl);
+    btn.onclick=()=>checkAns(opt,btn);
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('feedback').textContent='';
+  document.getElementById('nextBtn').className='next-btn';
+  answered=false;
+
+  card.style.animation='none'; card.offsetHeight; card.style.animation='cardIn 0.4s ease';
+  // Build a queue: question speech followed by each option individually
+  setTimeout(()=>{
+    if(!synth()) return;
+    _speakQueue = []; _speaking = false;
+    synthCancel();
+    const items = [currentSpeech, ...shuffled];
+    setTimeout(()=>speakQueue(items, 0.82, 1.15), 60);
+  }, 550);
+}
+
+function setCompanion(mood){
+  const c = document.getElementById('companion');
+  if(!c) return;
+  const moods = {
+    happy: '🦄', excited: '🌟', love: '💕', cheer: '🎉', sad: '😔', think: '🤔'
+  };
+  c.style.transform = 'scale(1.4) rotate(-10deg)';
+  c.textContent = moods[mood] || '🦄';
+  setTimeout(()=>{ c.style.transform = 'scale(1)'; c.textContent = '🦄'; }, 1200);
+}
+
+function checkAns(sel, btn){
+  if(answered) return;
+  answered=true;
+  const allBtns=document.querySelectorAll('.option-btn');
+  allBtns.forEach(b=>b.disabled=true);
+
+  const correct=sel.toLowerCase()===currentQ.answer.toLowerCase();
+  const fb=document.getElementById('feedback');
+
+  if(correct){
+    btn.className='option-btn correct';
+    setCompanion(streak >= 5 ? 'excited' : 'happy');
+    const starsEarned = 1+Math.floor(streak/3);
+    score+=starsEarned; streak++; correctCount++;
+    document.getElementById('scoreDisplay').textContent=score;
+    document.getElementById('streakDisplay') && updateStreakDisplay();
+    trackCorrect(currentCategory, starsEarned);
+    checkLevelUp();
+    refreshTabBadges();
+    playCorrect(); showBurst();
+
+    // Streak milestones
+    if(streak === 3) {
+      setTimeout(()=>speakText('Three in a row! You\'re on fire!'), 1200);
+    } else if(streak === 5) {
+      queueCeleb('🔥','5 in a Row!','You\'re absolutely amazing! Keep going superstar!');
+      setTimeout(()=>speakText('Five in a row! You are a superstar!'), 400);
+    } else if(streak === 10) {
+      queueCeleb('🏆','10 in a Row!','You\'re the most brilliant learner in the whole kingdom!');
+      setTimeout(()=>speakText('Ten in a row! You are the champion of A Star Academy!'), 400);
+    }
+
+    if(isBonus){
+      const m=correctMsgs[Math.floor(Math.random()*correctMsgs.length)];
+      fb.textContent=m+'  🦄'; fb.className='feedback show correct-msg';
+      speakText(m);
+      setTimeout(()=>triggerUnicornWin(),650);
+    } else {
+      const m=correctMsgs[Math.floor(Math.random()*correctMsgs.length)];
+      fb.textContent=m; fb.className='feedback show correct-msg';
+      speakText(m);
+      if(correctCount%3===0&&palaceLevel<palaceStageCount){
+        setTimeout(()=>triggerPalace(),700);
+      } else {
+        document.getElementById('nextBtn').className='next-btn show';
+      }
+    }
+  } else {
+    btn.className='option-btn wrong';
+    setCompanion('sad');
+    allBtns.forEach(b=>{
+      const t=b.querySelector('span:last-child');
+      if(t&&t.textContent.toLowerCase()===currentQ.answer.toLowerCase()) b.className='option-btn correct';
+    });
+    streak=0; updateStreakDisplay();
+    trackWrong(currentCategory);
+    playWrong();
+    // Show hint now that they've answered wrong
+    const hintEl = document.getElementById('questionHint');
+    if(hintEl && hintEl.dataset.hint) hintEl.textContent = hintEl.dataset.hint;
+    const m=isBonus?"So close! You'll win a unicorn next time!":wrongMsgs[Math.floor(Math.random()*wrongMsgs.length)];
+    fb.textContent=m; fb.className='feedback show wrong-msg';
+    // Speak wrong message then correct answer
+    speakText(m);
+    setTimeout(()=>speakText('The answer is ' + currentQ.answer), 1600);
+    document.getElementById('nextBtn').className='next-btn show';
+  }
+}
+
+function nextQuestion(){ hideStory(); loadQuestion(); }
+
+// ─────────────────────────────────────────────
+// BURST ANIMATION
+// ─────────────────────────────────────────────
+function showBurst(){
+  const wrap=document.getElementById('answerBurst');
+  const em=document.getElementById('burstEmoji');
+  em.textContent=burstList[Math.floor(Math.random()*burstList.length)];
+  em.style.animation='none'; em.offsetHeight; em.style.animation='burstPop 0.75s ease forwards';
+  wrap.className='answer-burst show';
+  setTimeout(()=>wrap.className='answer-burst',900);
+}
+
+// ─────────────────────────────────────────────
+// PALACE
+// ─────────────────────────────────────────────
+let pendingStoryStage = -1; // set when palace unlocks, shown after celeb closes
+
+function triggerPalace(){
+  palaceLevel++;
+  renderPalaceSVG();
+  buildPalaceProgress();
+  const m = getPalaceMilestone(palaceLevel-1);
+  pendingStoryStage = palaceLevel - 1;
+  queueCeleb(null, m.title, m.msg, false, true);
+  // Briefly open the palace so they can see it build
+  if(palaceCollapsed){
+    palaceCollapsed = false;
+    const content = document.getElementById('palaceContent');
+    const arrow = document.getElementById('palaceArrow');
+    if(content) content.className='palace-content';
+    if(arrow) arrow.className='palace-toggle-arrow';
+    setTimeout(()=>{
+      palaceCollapsed = true;
+      if(content) content.className='palace-content collapsed';
+      if(arrow) arrow.className='palace-toggle-arrow closed';
+    }, 5000);
+  }
+}
+
+// ─────────────────────────────────────────────
+// UNICORN / PRINCESS
+// ─────────────────────────────────────────────
+function triggerUnicornWin(){
+  unicornsTotal++;
+  trackUnicorn();
+  renderUnicornBar();
+  const inBatch=unicornsTotal%5;
+
+  if(inBatch===0){
+    // Exchange for princess!
+    const pIdx=Math.floor(unicornsTotal/5-1)%disneyPrincesses.length;
+    const p=disneyPrincesses[pIdx];
+    princesses.push(p);
+    renderPrincessBar();
+    playPrincess();
+    queueCeleb(p.emoji,
+      'You won '+p.name+'!',
+      '5 unicorns have become a Disney Princess! You have '+princesses.length+' princess'+(princesses.length>1?'es':'')+'!',
+      true
+    );
+  } else {
+    queueCeleb('🦄','You Won a Unicorn!',
+      'Amazing! '+inBatch+' out of 5 unicorns! Just '+(5-inBatch)+' more to win a Disney Princess!'
+    );
+  }
+}
+
+function renderPrincessBar(){
+  const sec=document.getElementById('princessSection');
+  const bar=document.getElementById('princessBar');
+  sec.style.display='block'; bar.innerHTML='';
+  princesses.forEach(p=>{
+    const s=document.createElement('span');
+    s.className='princess-token'; s.title=p.name; s.textContent=p.emoji;
+    bar.appendChild(s);
+  });
+}
+
+// ─────────────────────────────────────────────
+// CELEBRATION QUEUE
+// ─────────────────────────────────────────────
+function queueCeleb(emoji,title,msg,isPrincess=false,isPalace=false){
+  celebQ.push({emoji,title,msg,isPrincess,isPalace});
+  if(!celebActive) showNextCeleb();
+}
+
+function showNextCeleb(){
+  if(!celebQ.length){ celebActive=false; document.getElementById('nextBtn').className='next-btn show'; return; }
+  celebActive=true;
+  const {emoji,title,msg,isPalace}=celebQ.shift();
+  const emojiWrap=document.getElementById('celebEmoji');
+  const palaceWrap=document.getElementById('celebPalaceWrap');
+
+  if(isPalace){
+    // Show SVG palace snapshot in celebration
+    emojiWrap.style.display='none';
+    palaceWrap.style.display='block';
+    palaceWrap.innerHTML = document.getElementById('palaceSVG').outerHTML;
+    // ensure all revealed pieces show in the clone too
+  } else {
+    emojiWrap.style.display='';
+    palaceWrap.style.display='none';
+    emojiWrap.textContent=emoji;
+  }
+
+  document.getElementById('celebTitle').textContent=title;
+  document.getElementById('celebMsg').textContent=msg;
+  launchConfetti();
+  document.getElementById('celebration').className='celebration show';
+  setTimeout(()=>speakText(title+'. '+msg),300);
+}
+
+function closeCelebration(){
+  document.getElementById('celebration').className='celebration';
+  setTimeout(()=>{
+    showNextCeleb();
+    // If queue now empty and a story is pending, show it
+    if(!celebQ.length && pendingStoryStage >= 0){
+      setTimeout(()=>{ showStory(pendingStoryStage); pendingStoryStage=-1; }, 400);
+    }
+  }, 350);
+}
+
+// ─────────────────────────────────────────────
+// CONFETTI
+// ─────────────────────────────────────────────
+function launchConfetti(){
+  const colors=['#ff85c2','#c084fc','#fbbf24','#86efac','#bae6fd','#f97316'];
+  const ems=['✨','⭐','🌟','💫','🌸','👑','🦄'];
+  for(let i=0;i<55;i++){
+    setTimeout(()=>{
+      const p=document.createElement('div');
+      if(Math.random()>0.5){
+        p.className='confetti-piece';
+        p.style.background=colors[Math.floor(Math.random()*colors.length)];
+        p.style.width=(6+Math.random()*10)+'px'; p.style.height=p.style.width;
+      } else {
+        p.style.cssText='position:fixed;pointer-events:none;z-index:200;font-size:'+(1+Math.random())+'rem;';
+        p.style.animation='confettiFall '+(1.5+Math.random()*2)+'s linear forwards';
+        p.textContent=ems[Math.floor(Math.random()*ems.length)];
+      }
+      p.style.left=(Math.random()*100)+'vw';
+      p.style.animationDuration=(1.5+Math.random()*2)+'s';
+      p.style.animationDelay=(Math.random()*0.4)+'s';
+      document.body.appendChild(p);
+      setTimeout(()=>p.remove(),4000);
+    },i*30);
+  }
+}
+
+// ─────────────────────────────────────────────
+// PROGRESS TRACKING
+// ─────────────────────────────────────────────
+
+// Per-session tracking
+let sessionStars = 0, sessionCorrect = 0, sessionBestStreak = 0, sessionUnicorns = 0;
+let sessionCatCorrect = {}, sessionCatTotal = {};
+categories.forEach(c => { sessionCatCorrect[c.id] = 0; sessionCatTotal[c.id] = 0; });
+
+// Load/save persistent data via localStorage
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem('aStarProgress') || 'null') || defaultProgress(); }
+  catch(e) { return defaultProgress(); }
+}
+function defaultProgress() {
+  return { totalStars: 0, dailyStars: {}, catCorrect: {}, catTotal: {}, lastDay: null, streak: 0, longestStreak: 0 };
+}
+function saveProgress(p) {
+  try { localStorage.setItem('aStarProgress', JSON.stringify(p)); } catch(e){}
+}
+
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+}
+
+function getDayLabel(offset) {
+  const d = new Date(); d.setDate(d.getDate() - offset);
+  return ['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()];
+}
+
+// Called on each correct answer — track session stats
+function trackCorrect(catId, starsEarned) {
+  sessionCorrect++;
+  sessionStars += starsEarned;
+  if (streak > sessionBestStreak) sessionBestStreak = streak;
+  sessionCatCorrect[catId] = (sessionCatCorrect[catId] || 0) + 1;
+  sessionCatTotal[catId] = (sessionCatTotal[catId] || 0) + 1;
+}
+function trackWrong(catId) {
+  sessionCatTotal[catId] = (sessionCatTotal[catId] || 0) + 1;
+}
+function trackUnicorn() { sessionUnicorns++; }
+
+// Commit session data to persistent storage
+function commitSession() {
+  const p = loadProgress();
+  const today = todayKey();
+
+  // stars
+  p.totalStars = (p.totalStars || 0) + sessionStars;
+  p.dailyStars = p.dailyStars || {};
+  p.dailyStars[today] = (p.dailyStars[today] || 0) + sessionStars;
+
+  // categories
+  p.catCorrect = p.catCorrect || {};
+  p.catTotal = p.catTotal || {};
+  categories.forEach(c => {
+    p.catCorrect[c.id] = (p.catCorrect[c.id] || 0) + (sessionCatCorrect[c.id] || 0);
+    p.catTotal[c.id] = (p.catTotal[c.id] || 0) + (sessionCatTotal[c.id] || 0);
+  });
+
+  // streak
+  const last = p.lastDay;
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  const yesterKey = yesterday.getFullYear() + '-' + (yesterday.getMonth()+1) + '-' + yesterday.getDate();
+  if (last === today) {
+    // already played today, streak unchanged
+  } else if (last === yesterKey) {
+    p.streak = (p.streak || 0) + 1;
+  } else {
+    p.streak = 1;
+  }
+  if ((p.streak || 0) > (p.longestStreak || 0)) p.longestStreak = p.streak;
+  p.lastDay = today;
+
+  saveProgress(p);
+}
+
+// ── FINISH SESSION ──
+let finishConfirmPending = false;
+function confirmFinish(){
+  const btn = document.querySelector('.finish-btn');
+  if(!finishConfirmPending){
+    finishConfirmPending = true;
+    if(btn){ btn.textContent = '✅ Yes, finish!'; btn.style.background='linear-gradient(135deg,#22c55e,#16a34a)'; }
+    speakText('Are you sure? Tap again to finish!');
+    setTimeout(()=>{
+      finishConfirmPending = false;
+      if(btn){ btn.textContent = '🏁 Finish Session'; btn.style.background=''; }
+    }, 3000);
+  } else {
+    finishConfirmPending = false;
+    finishSession();
+  }
+}
+
+function finishSession() {
+  if (sessionCorrect === 0 && sessionStars === 0) {
+    speakText("Keep going! Answer some questions first!");
+    return;
+  }
+  if (streak > sessionBestStreak) sessionBestStreak = streak;
+  commitSession();
+  showSessionSummary();
+}
+
+function showSessionSummary() {
+  // pick emoji/title based on performance
+  const emojis = sessionCorrect >= 10 ? '🌟' : sessionCorrect >= 5 ? '⭐' : '🦄';
+  const titles = sessionCorrect >= 10 ? 'Superstar Session!' : sessionCorrect >= 5 ? 'Amazing Work!' : 'Great Try!';
+  document.getElementById('summaryEmoji').textContent = emojis;
+  document.getElementById('summaryTitle').textContent = titles;
+  document.getElementById('summarySubtitle').textContent = 'You answered ' + sessionCorrect + ' question' + (sessionCorrect!==1?'s':'') + ' today!';
+  document.getElementById('sumStars').textContent = sessionStars;
+  document.getElementById('sumCorrect').textContent = sessionCorrect;
+  document.getElementById('sumBestStreak').textContent = sessionBestStreak;
+  document.getElementById('sumUnicorns').textContent = sessionUnicorns;
+
+  // category bars
+  const container = document.getElementById('catBarsContainer');
+  container.innerHTML = '';
+  categories.forEach(cat => {
+    const tot = sessionCatTotal[cat.id] || 0;
+    const cor = sessionCatCorrect[cat.id] || 0;
+    if (tot === 0) return;
+    const pct = Math.round((cor / tot) * 100);
+    container.innerHTML += `
+      <div class="cat-row">
+        <div class="cat-row-label">${cat.label}</div>
+        <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:0%" data-pct="${pct}"></div></div>
+        <div class="cat-pct">${pct}%</div>
+      </div>`;
+  });
+
+  document.getElementById('sessionSummary').className = 'session-summary show';
+  speakText(titles + ' You answered ' + sessionCorrect + ' questions and earned ' + sessionStars + ' stars!');
+
+  // animate bars after paint
+  setTimeout(() => {
+    document.querySelectorAll('#catBarsContainer .cat-bar-fill').forEach(b => {
+      b.style.width = b.dataset.pct + '%';
+    });
+  }, 200);
+}
+
+function closeSummary() {
+  document.getElementById('sessionSummary').className = 'session-summary';
+  sessionStars = 0; sessionCorrect = 0; sessionBestStreak = 0; sessionUnicorns = 0;
+  categories.forEach(c => { sessionCatCorrect[c.id] = 0; sessionCatTotal[c.id] = 0; });
+  finishConfirmPending = false;
+  const btn = document.querySelector('.finish-btn');
+  if(btn){ btn.textContent = '🏁 Finish Session'; btn.style.background=''; }
+}
+
+// ── DASHBOARD ──
+function openDashboard() {
+  document.getElementById('sessionSummary').className = 'session-summary';
+  renderDashboard();
+  document.getElementById('dashboard').className = 'dashboard show';
+}
+
+function closeDashboard() {
+  document.getElementById('dashboard').className = 'dashboard';
+}
+
+function renderDashboard() {
+  const p = loadProgress();
+  const today = todayKey();
+
+  // streak
+  document.getElementById('dashStreakNum').textContent = p.streak || 0;
+
+  // last 7 day dots
+  const dots = document.getElementById('streakDots');
+  dots.innerHTML = '';
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+    const label = ['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()];
+    const played = (p.dailyStars || {})[key] > 0;
+    const isToday = key === today;
+    dots.innerHTML += `<div class="day-dot${played?' done':''}${isToday?' today':''}">
+      ${played ? '🔥' : label}
+    </div>`;
+  }
+
+  // stars chart (last 7 days)
+  const chart = document.getElementById('starsChart');
+  chart.innerHTML = '';
+  const daily = p.dailyStars || {};
+  let maxStars = 1;
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+    maxStars = Math.max(maxStars, daily[key] || 0);
+  }
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+    const val = daily[key] || 0;
+    const pct = Math.round((val / maxStars) * 100);
+    const label = ['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()];
+    chart.innerHTML += `<div class="chart-bar-wrap">
+      <div class="chart-val">${val||''}</div>
+      <div class="chart-bar" style="height:${pct}%;"></div>
+      <div class="chart-label">${label}</div>
+    </div>`;
+  }
+
+  // reward grid (total stars as lit stars)
+  const grid = document.getElementById('rewardGrid');
+  grid.innerHTML = '';
+  const total = p.totalStars || 0;
+  const displayCount = Math.max(20, Math.ceil(total / 5) * 5 + 5);
+  const rewardEmojis = ['⭐','🌟','✨','💫','👑'];
+  for (let i = 0; i < Math.min(displayCount, 50); i++) {
+    const em = rewardEmojis[Math.floor(i / 10) % rewardEmojis.length];
+    grid.innerHTML += `<span class="reward-star${i < total ? ' lit' : ''}">${em}</span>`;
+  }
+  document.getElementById('rewardTotal').textContent = '⭐ ' + total + ' total stars earned!';
+
+  // category bars (all time)
+  const dashCats = document.getElementById('dashCatBars');
+  dashCats.innerHTML = '';
+  categories.forEach(cat => {
+    const tot = (p.catTotal || {})[cat.id] || 0;
+    const cor = (p.catCorrect || {})[cat.id] || 0;
+    const pct = tot > 0 ? Math.round((cor / tot) * 100) : 0;
+    dashCats.innerHTML += `
+      <div class="cat-row">
+        <div class="cat-row-label">${cat.label}</div>
+        <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:${pct}%"></div></div>
+        <div class="cat-pct">${tot > 0 ? pct+'%' : '—'}</div>
+      </div>`;
+  });
+
+  // sticker book — one sticker per 5 correct answers total
+  const stickerGrid = document.getElementById('stickerGrid');
+  stickerGrid.innerHTML = '';
+  const totalCorrect = Object.values(p.catCorrect || {}).reduce((a,b)=>a+b,0);
+  const stickersEarned = Math.floor(totalCorrect / 5);
+  const stickerSet = ['🌟','🦄','👑','🌈','🎀','🧁','🦋','🌸','💎','🏆','🎠','🪄','🌺','🎆','🐉'];
+  const totalSlots = Math.max(15, stickersEarned + 5);
+  for (let i = 0; i < Math.min(totalSlots, 30); i++) {
+    const earned = i < stickersEarned;
+    const em = stickerSet[i % stickerSet.length];
+    stickerGrid.innerHTML += `<div style="
+      font-size:1.8rem;text-align:center;padding:6px;border-radius:12px;
+      background:${earned ? 'linear-gradient(135deg,#fdf2f8,#faf5ff)' : '#f3e8ff'};
+      border:2px solid ${earned ? '#c084fc' : '#e9d5ff'};
+      filter:${earned ? 'none' : 'grayscale(1)'};
+      opacity:${earned ? '1' : '0.25'};
+      transition:all 0.4s;
+      ${earned ? 'box-shadow:0 2px 8px rgba(192,132,252,0.3);' : ''}
+    ">${em}</div>`;
+  }
+
+  // animate chart bars
+  setTimeout(() => {
+    document.querySelectorAll('#starsChart .chart-bar').forEach((b, i) => {
+      const h = b.style.height; b.style.height = '0%';
+      setTimeout(() => b.style.height = h, i * 60);
+    });
+  }, 100);
+}
+
+init();
+
+// ─────────────────────────────────────────────
+// PWA SETUP
+// ─────────────────────────────────────────────
+(function setupPWA() {
+  // Generate star icon as SVG → PNG via canvas
+  function makeStarIcon(size) {
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+
+    // Background gradient (purple)
+    const bg = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+    bg.addColorStop(0, '#c084fc');
+    bg.addColorStop(1, '#7e22ce');
+    ctx.fillStyle = bg;
+    ctx.beginPath();
+    ctx.roundRect(0, 0, size, size, size * 0.22);
+    ctx.fill();
+
+    // Draw a 5-point star
+    const cx = size / 2, cy = size / 2;
+    const outerR = size * 0.38, innerR = size * 0.16;
+    const points = 5;
+    ctx.beginPath();
+    for (let i = 0; i < points * 2; i++) {
+      const angle = (i * Math.PI / points) - Math.PI / 2;
+      const r = i % 2 === 0 ? outerR : innerR;
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+
+    // Gold fill with glow
+    ctx.shadowColor = 'rgba(251,191,36,0.7)';
+    ctx.shadowBlur = size * 0.08;
+    const starGrad = ctx.createLinearGradient(cx, cy - outerR, cx, cy + outerR);
+    starGrad.addColorStop(0, '#fde68a');
+    starGrad.addColorStop(1, '#f59e0b');
+    ctx.fillStyle = starGrad;
+    ctx.fill();
+
+    // White outline
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = size * 0.025;
+    ctx.stroke();
+
+    return canvas.toDataURL('image/png');
+  }
+
+  const icon192 = makeStarIcon(192);
+  const icon512 = makeStarIcon(512);
+  const icon180 = makeStarIcon(180);
+
+  // Set apple touch icon
+  document.getElementById('appleTouchIcon').href = icon180;
+
+  // Build manifest as blob URL
+  const manifest = {
+    name: 'A Star Academy',
+    short_name: 'Star Academy',
+    description: 'A magical learning game for little ones!',
+    start_url: '.',
+    display: 'standalone',
+    orientation: 'portrait',
+    background_color: '#fdf4ff',
+    theme_color: '#9333ea',
+    icons: [
+      { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+      { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
+  document.getElementById('manifestLink').href = URL.createObjectURL(blob);
+
+  // Register service worker for offline support
+  if ('serviceWorker' in navigator) {
+    const swCode = `
+const CACHE = 'a-star-academy-v1';
+self.addEventListener('install', e => {
+  self.skipWaiting();
+  e.waitUntil(caches.open(CACHE).then(c => c.add('/')));
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(clients.claim());
+});
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))
+  );
+});`;
+    const swBlob = new Blob([swCode], {type: 'application/javascript'});
+    const swURL = URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swURL).catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>
