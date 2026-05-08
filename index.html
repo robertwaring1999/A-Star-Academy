@@ -8,9 +8,17 @@
 <meta name="theme-color" content="#9333ea">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="A Star Academy">
-<link rel="apple-touch-icon" id="appleTouchIcon">
-<link rel="manifest" id="manifestLink">
+<meta name="theme-color" content="#9333ea">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/icon-180.png">
+<link rel="apple-touch-icon" sizes="167x167" href="./icons/icon-167.png">
+<link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="144x144" href="./icons/icon-144.png">
+<link rel="apple-touch-icon" sizes="128x128" href="./icons/icon-128.png">
+<link rel="apple-touch-icon" sizes="120x120" href="./icons/icon-120.png">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -2315,102 +2323,14 @@ function renderDashboard() {
 init();
 
 // ─────────────────────────────────────────────
-// PWA SETUP
 // ─────────────────────────────────────────────
-(function setupPWA() {
-  // Generate star icon as SVG → PNG via canvas
-  function makeStarIcon(size) {
-    const canvas = document.createElement('canvas');
-    canvas.width = size; canvas.height = size;
-    const ctx = canvas.getContext('2d');
-
-    // Background gradient (purple)
-    const bg = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
-    bg.addColorStop(0, '#c084fc');
-    bg.addColorStop(1, '#7e22ce');
-    ctx.fillStyle = bg;
-    ctx.beginPath();
-    ctx.roundRect(0, 0, size, size, size * 0.22);
-    ctx.fill();
-
-    // Draw a 5-point star
-    const cx = size / 2, cy = size / 2;
-    const outerR = size * 0.38, innerR = size * 0.16;
-    const points = 5;
-    ctx.beginPath();
-    for (let i = 0; i < points * 2; i++) {
-      const angle = (i * Math.PI / points) - Math.PI / 2;
-      const r = i % 2 === 0 ? outerR : innerR;
-      const x = cx + r * Math.cos(angle);
-      const y = cy + r * Math.sin(angle);
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    }
-    ctx.closePath();
-
-    // Gold fill with glow
-    ctx.shadowColor = 'rgba(251,191,36,0.7)';
-    ctx.shadowBlur = size * 0.08;
-    const starGrad = ctx.createLinearGradient(cx, cy - outerR, cx, cy + outerR);
-    starGrad.addColorStop(0, '#fde68a');
-    starGrad.addColorStop(1, '#f59e0b');
-    ctx.fillStyle = starGrad;
-    ctx.fill();
-
-    // White outline
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-    ctx.lineWidth = size * 0.025;
-    ctx.stroke();
-
-    return canvas.toDataURL('image/png');
-  }
-
-  const icon192 = makeStarIcon(192);
-  const icon512 = makeStarIcon(512);
-  const icon180 = makeStarIcon(180);
-
-  // Set apple touch icon
-  document.getElementById('appleTouchIcon').href = icon180;
-
-  // Build manifest as blob URL
-  const manifest = {
-    name: 'A Star Academy',
-    short_name: 'Star Academy',
-    description: 'A magical learning game for little ones!',
-    start_url: '.',
-    display: 'standalone',
-    orientation: 'portrait',
-    background_color: '#fdf4ff',
-    theme_color: '#9333ea',
-    icons: [
-      { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-      { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
-    ]
-  };
-  const blob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
-  document.getElementById('manifestLink').href = URL.createObjectURL(blob);
-
-  // Register service worker for offline support
-  if ('serviceWorker' in navigator) {
-    const swCode = `
-const CACHE = 'a-star-academy-v1';
-self.addEventListener('install', e => {
-  self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then(c => c.add('/')));
-});
-self.addEventListener('activate', e => {
-  e.waitUntil(clients.claim());
-});
-self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))
-  );
-});`;
-    const swBlob = new Blob([swCode], {type: 'application/javascript'});
-    const swURL = URL.createObjectURL(swBlob);
-    navigator.serviceWorker.register(swURL).catch(() => {});
-  }
-})();
+// PWA SETUP — static manifest.json + sw.js
+// ─────────────────────────────────────────────
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
 </script>
 </body>
 </html>
